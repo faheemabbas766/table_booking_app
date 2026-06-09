@@ -10,8 +10,9 @@ import 'Providers/editareaspro.dart';
 import 'Providers/homepro.dart';
 import 'Providers/searchpro.dart';
 
-void main() {
-  SystemChrome.setPreferredOrientations([
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);

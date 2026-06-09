@@ -31,6 +31,32 @@ class MyServer {
   ];
   static Database? db;
 
+  static String _formatDateTime(DateTime value) {
+    return "${value.year}-${value.month}-${value.day} ${value.hour}:${value.minute}:${value.second}";
+  }
+
+  static DateTime _parseDbDateTime(String value) {
+    final parts = value.split(" ");
+    final dateParts = parts[0].split("-");
+    final timeParts = parts.length > 1 ? parts[1].split(":") : ["0", "0", "0"];
+    return DateTime(
+      int.parse(dateParts[0]),
+      int.parse(dateParts[1]),
+      int.parse(dateParts[2]),
+      int.parse(timeParts[0]),
+      timeParts.length > 1 ? int.parse(timeParts[1]) : 0,
+      timeParts.length > 2 ? int.parse(timeParts[2]) : 0,
+    );
+  }
+
+  static DateTime _startOfDay(DateTime value) {
+    return DateTime(value.year, value.month, value.day);
+  }
+
+  static DateTime _endOfDay(DateTime value) {
+    return DateTime(value.year, value.month, value.day, 23, 59, 59, 999);
+  }
+
   static showLoading(String text, BuildContext context) {
     showDialog(
       context: context,
@@ -141,7 +167,7 @@ class MyServer {
             null,
             areaid,
             tableid,
-            "${bookdate.year}-${bookdate.month}-${bookdate.day} ${bookdate.hour}:${bookdate.minute}:${bookdate.second}",
+            _formatDateTime(bookdate),
             custname,
             custphn,
             ttlpersons,
@@ -741,7 +767,7 @@ class MyServer {
       int advance,
       int persons,
       BuildContext context) async {
-    String dt = "${bookdate.year}-${bookdate.month}-${bookdate.day}";
+    String dt = _formatDateTime(bookdate);
     await db!.execute(
       "update bookings set bookdate='$dt' where bookid=$bookid",
     );
@@ -975,25 +1001,21 @@ class MyServer {
           }
         }
 
-        DateTime bookDate = DateTime(
-          int.parse(i["bookdate"].toString().split(' ')[0].split("-")[0]),
-          int.parse(i["bookdate"].toString().split(' ')[0].split("-")[1]),
-          int.parse(i["bookdate"].toString().split(' ')[0].split("-")[2]),
-          int.parse(i["bookdate"].toString().split(' ')[1].split(":")[0]),
-          int.parse(i["bookdate"].toString().split(' ')[1].split(":")[1]),
-        );
+        DateTime bookDate = _parseDbDateTime(i["bookdate"].toString());
 
         // Apply the date filter
+        final from = fromDate == null ? null : _startOfDay(fromDate);
+        final to = toDate == null ? null : _endOfDay(toDate);
         if (fromDate != null && toDate != null) {
-          if (bookDate.isBefore(fromDate) || bookDate.isAfter(toDate)) {
+          if (bookDate.isBefore(from!) || bookDate.isAfter(to!)) {
             continue; // Skip records that don't fall within the date range
           }
         } else if (fromDate != null) {
-          if (bookDate.isBefore(fromDate) || bookDate.isAfter(fromDate)) {
+          if (bookDate.isBefore(from!) || bookDate.isAfter(_endOfDay(from))) {
             continue; // Skip records that are before or after the fromDate
           }
         } else if (toDate != null) {
-          if (bookDate.isBefore(toDate) || bookDate.isAfter(toDate)) {
+          if (bookDate.isBefore(_startOfDay(toDate)) || bookDate.isAfter(to!)) {
             continue; // Skip records that are before or after the toDate
           }
         }

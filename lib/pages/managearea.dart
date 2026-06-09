@@ -138,46 +138,11 @@ class _ManageAreaState extends State<ManageArea> {
   }
 
   Future<void> _showAddTableDialog(_TableShape shape) async {
-    final controller = TextEditingController();
-    await showDialog<void>(
+    final name = await showDialog<String>(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text("Add ${shape.label}"),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            textInputAction: TextInputAction.done,
-            decoration: const InputDecoration(hintText: "Table name"),
-            onSubmitted: (_) => _addTable(dialogContext, controller, shape),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () => _addTable(dialogContext, controller, shape),
-              child: const Text("Add"),
-            ),
-          ],
-        );
-      },
+      builder: (dialogContext) => _TableNameDialog(shape: shape),
     );
-    controller.dispose();
-  }
-
-  void _addTable(
-    BuildContext dialogContext,
-    TextEditingController controller,
-    _TableShape shape,
-  ) {
-    final name = controller.text.trim();
-    if (name.isEmpty) {
-      ft.Fluttertoast.showToast(
-        msg: "Please enter table name",
-        toastLength: ft.Toast.LENGTH_SHORT,
-      );
+    if (!mounted || name == null) {
       return;
     }
 
@@ -207,7 +172,6 @@ class _ManageAreaState extends State<ManageArea> {
     provider.isdonable = true;
     provider.notifyListenerz();
     setState(() => _selectedIndex = provider.mytables.length - 1);
-    Navigator.of(dialogContext).pop();
   }
 
   void _deleteSelected() {
@@ -602,6 +566,61 @@ class _FloorGridPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _TableNameDialog extends StatefulWidget {
+  const _TableNameDialog({required this.shape});
+
+  final _TableShape shape;
+
+  @override
+  State<_TableNameDialog> createState() => _TableNameDialogState();
+}
+
+class _TableNameDialogState extends State<_TableNameDialog> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final name = _controller.text.trim();
+    if (name.isEmpty) {
+      ft.Fluttertoast.showToast(
+        msg: "Enter table name",
+        toastLength: ft.Toast.LENGTH_SHORT,
+      );
+      return;
+    }
+    Navigator.of(context).pop(name);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text("Add ${widget.shape.label}"),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        textInputAction: TextInputAction.done,
+        decoration: const InputDecoration(labelText: "Table name"),
+        onSubmitted: (_) => _submit(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          onPressed: _submit,
+          child: const Text("Add"),
+        ),
+      ],
+    );
+  }
 }
 
 class _TableShape {

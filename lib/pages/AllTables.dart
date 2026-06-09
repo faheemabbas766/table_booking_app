@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:table_booking/theme/app_theme.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart' as ft;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:fluttertoast/fluttertoast.dart' as ft;
-import '../Api & Routes/routes.dart';
-import '../Providers/alltablespro.dart';
-import '../Providers/homepro.dart';
+import 'package:table_booking/Entities/bookingobject.dart';
+import 'package:table_booking/Entities/tableobject.dart';
+import 'package:table_booking/Providers/alltablespro.dart';
+import 'package:table_booking/Providers/homepro.dart';
+import 'package:table_booking/theme/app_theme.dart';
+
 import '../myserver.dart';
 
 class AllTables extends StatefulWidget {
@@ -17,21 +19,14 @@ class AllTables extends StatefulWidget {
 }
 
 class _AllTablesState extends State<AllTables> {
-  TextEditingController custname = TextEditingController();
-  TextEditingController custphn = TextEditingController();
-  TextEditingController ttlpersons = TextEditingController();
-  TextEditingController ttladvance = TextEditingController();
-
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    loadWholeArea(context);
+    _loadWholeArea();
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -39,1352 +34,711 @@ class _AllTablesState extends State<AllTables> {
     super.dispose();
   }
 
-  loadWholeArea(BuildContext context) async {
-    SystemChrome.setPreferredOrientations(
-      [
-        DeviceOrientation.landscapeRight,
-        DeviceOrientation.landscapeLeft,
-      ],
-    ).then((value) async {
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        // setState(() {});
-        if (mounted) {
-          RouteManager.width = MediaQuery.of(context).size.width;
-          RouteManager.height = MediaQuery.of(context).size.height;
-          print(
-              "WIDTH=====================-----------------------${RouteManager.width}");
-          print(
-              "Height=====================-----------------------${RouteManager.height}");
-          while (true) {
-            var value = await MyServer.getWholeAreaForBooking(
-                Provider.of<AllTablesPro>(context, listen: false).areaid,
-                Provider.of<HomePro>(context, listen: false).d!,
-                context);
-            if (value) {
-              Provider.of<AllTablesPro>(context, listen: false).isloaded = true;
-              Provider.of<AllTablesPro>(context, listen: false)
-                  .notifyListenerz();
-              break;
-            }
-          }
-        }
-      });
-    });
+  Future<void> _loadWholeArea() async {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
+    if (!mounted) {
+      return;
+    }
+
+    final provider = Provider.of<AllTablesPro>(context, listen: false);
+    final date = Provider.of<HomePro>(context, listen: false).d!;
+    while (mounted) {
+      final loaded = await MyServer.getWholeAreaForBooking(
+        provider.areaid,
+        date,
+        context,
+      );
+      if (loaded) {
+        provider.isloaded = true;
+        provider.notifyListenerz();
+        break;
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    print(
-        "BUILD WIDTH=====================-----------------------${RouteManager.width}");
-    print(
-        "BUILD Height=====================-----------------------${RouteManager.height}");
     return SafeArea(
       child: PopScope(
         onPopInvokedWithResult: (didPop, result) {
-          if (!didPop) {
-            return;
+          if (didPop) {
+            Provider.of<AllTablesPro>(context, listen: false).clearAll();
           }
-          Provider.of<AllTablesPro>(context, listen: false).clearAll();
         },
         child: Scaffold(
-          body: Container(
-            padding: EdgeInsets.all(RouteManager.width / 100),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: RouteManager.height / 1.1,
-                    decoration: const BoxDecoration(
-                      color: AppTheme.floorSurface,
-                    ),
-                    padding: EdgeInsets.all(RouteManager.height / 100),
-                    child: !Provider.of<AllTablesPro>(context).isloaded
-                        ? const SizedBox()
-                        : Builder(builder: (context) {
-                            print(
-                                "LOADED TABLES===========================================================----------------------${Provider.of<AllTablesPro>(context, listen: false).mytables}");
-                            List<Widget> mywlist = [];
-                            for (int i = 0;
-                                i <
-                                    Provider.of<AllTablesPro>(context,
-                                            listen: false)
-                                        .mytables
-                                        .length;
-                                i++) {
-                              print(
-                                  "ADDEDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
-                              mywlist.add(
-                                StatefulBuilder(builder: (context, stateobj) {
-                                  return Column(
-                                    children: [
-                                      SizedBox(
-                                        height: Provider.of<AllTablesPro>(
-                                                context,
-                                                listen: false)
-                                            .mytables[i]
-                                            .dy,
-                                      ),
-                                      Row(
-                                        children: [
-                                          SizedBox(
-                                            width: Provider.of<AllTablesPro>(
-                                                    context,
-                                                    listen: false)
-                                                .mytables[i]
-                                                .dx,
-                                          ),
-                                          InkWell(
-                                            onTap: () {
-                                              ft.Fluttertoast.showToast(
-                                                msg: Provider.of<AllTablesPro>(
-                                                        context,
-                                                        listen: false)
-                                                    .mytables[i]
-                                                    .tablename,
-                                                toastLength:
-                                                    ft.Toast.LENGTH_SHORT,
-                                              );
-                                              if (Provider.of<AllTablesPro>(
-                                                          context,
-                                                          listen: false)
-                                                      .mytables[i]
-                                                      .booking ==
-                                                  null) {
-                                                showDialog(
-                                                    context: context,
-                                                    builder: (cont) {
-                                                      return SingleChildScrollView(
-                                                        child: AlertDialog(
-                                                          title: Row(
-                                                            children: [
-                                                              InkWell(
-                                                                onTap: () {
-                                                                  Navigator.of(
-                                                                          context,
-                                                                          rootNavigator:
-                                                                              true)
-                                                                      .pop();
-                                                                },
-                                                                child: Icon(
-                                                                  Icons.close,
-                                                                  color: AppTheme
-                                                                      .danger,
-                                                                  size: RouteManager
-                                                                          .height /
-                                                                      12,
-                                                                ),
-                                                              ),
-                                                              SizedBox(
-                                                                  width: RouteManager
-                                                                          .height /
-                                                                      2.4),
-                                                              Text(
-                                                                "New Booking",
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize:
-                                                                      RouteManager
-                                                                              .width /
-                                                                          36,
-                                                                  color: const Color
-                                                                      .fromARGB(
-                                                                      255,
-                                                                      55,
-                                                                      253,
-                                                                      18),
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          content: Container(
-                                                            // color: AppTheme.danger,
-                                                            // width: RouteManager.width/4,
-                                                            // height: RouteManager.height / 1.675,
-                                                            child: Stack(
-                                                              children: [
-                                                                Container(
-                                                                  child: Column(
-                                                                    children: [
-                                                                      Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.start,
-                                                                        children: [
-                                                                          Text(
-                                                                            "Area : ",
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize: RouteManager.width / 42,
-                                                                              fontWeight: FontWeight.bold,
-                                                                            ),
-                                                                          ),
-                                                                          Text(
-                                                                            Provider.of<AllTablesPro>(cont, listen: false).areaname,
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize: RouteManager.width / 42,
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                      SizedBox(
-                                                                        height: RouteManager.width /
-                                                                            100,
-                                                                      ),
-                                                                      Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.start,
-                                                                        children: [
-                                                                          Text(
-                                                                            "Table : ",
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize: RouteManager.width / 42,
-                                                                              fontWeight: FontWeight.bold,
-                                                                            ),
-                                                                          ),
-                                                                          Text(
-                                                                            Provider.of<AllTablesPro>(cont, listen: false).mytables[i].tablename,
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize: RouteManager.width / 42,
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                      SizedBox(
-                                                                        height: RouteManager.width /
-                                                                            100,
-                                                                      ),
-                                                                      Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.start,
-                                                                        children: [
-                                                                          Text(
-                                                                            "Date : ",
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize: RouteManager.width / 42,
-                                                                              fontWeight: FontWeight.bold,
-                                                                            ),
-                                                                          ),
-                                                                          Text(
-                                                                            "${Provider.of<HomePro>(cont, listen: false).d!.day} ${MyServer.months[Provider.of<HomePro>(cont, listen: false).d!.month]} ${Provider.of<HomePro>(cont, listen: false).d!.year}",
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize: RouteManager.width / 42,
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                      SizedBox(
-                                                                        height: RouteManager.width /
-                                                                            100,
-                                                                      ),
-                                                                      Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.start,
-                                                                        children: [
-                                                                          Text(
-                                                                            "Day : ",
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize: RouteManager.width / 42,
-                                                                              fontWeight: FontWeight.bold,
-                                                                            ),
-                                                                          ),
-                                                                          Text(
-                                                                            DateFormat('EEEE').format(Provider.of<HomePro>(cont, listen: false).d!),
-                                                                            // Provider.of<HomePro>(context, listen: false).d!.year.toString() +
-                                                                            //     "-" +
-                                                                            //     Provider.of<HomePro>(context, listen: false).d!.month.toString() +
-                                                                            //     "-" +
-                                                                            //     Provider.of<HomePro>(context, listen: false).d!.day.toString(),
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize: RouteManager.width / 42,
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                      SizedBox(
-                                                                        height:
-                                                                            RouteManager.width /
-                                                                                32,
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                                Row(
-                                                                  children: [
-                                                                    SizedBox(
-                                                                        width: RouteManager.width /
-                                                                            3.8),
-                                                                    SizedBox(
-                                                                      width:
-                                                                          RouteManager.width /
-                                                                              3,
-                                                                      child:
-                                                                          Column(
-                                                                        children: [
-                                                                          // SizedBox(width: RouteManager.width / 4),
-                                                                          TextField(
-                                                                            controller:
-                                                                                custname,
-                                                                            decoration:
-                                                                                InputDecoration(
-                                                                              enabledBorder: const OutlineInputBorder(
-                                                                                borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                                                                                borderSide: BorderSide(
-                                                                                  color: AppTheme.primary,
-                                                                                ),
-                                                                              ),
-                                                                              focusedBorder: const OutlineInputBorder(
-                                                                                borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                                                                                borderSide: BorderSide(
-                                                                                  color: AppTheme.primary,
-                                                                                ),
-                                                                              ),
-                                                                              disabledBorder: const OutlineInputBorder(
-                                                                                borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                                                                                borderSide: BorderSide(
-                                                                                  color: AppTheme.primary,
-                                                                                ),
-                                                                              ),
-                                                                              fillColor: Colors.white,
-                                                                              filled: true,
-                                                                              floatingLabelBehavior: FloatingLabelBehavior.auto,
-                                                                              labelText: "Name",
-                                                                              labelStyle: TextStyle(
-                                                                                fontWeight: FontWeight.bold,
-                                                                                fontSize: RouteManager.width / 45,
-                                                                                color: AppTheme.primary,
-                                                                              ),
-                                                                              hintText: "Enter Customer's Name",
-                                                                              hintStyle: TextStyle(
-                                                                                fontSize: RouteManager.width / 45,
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                          SizedBox(
-                                                                              height: RouteManager.width / 80),
-                                                                          TextField(
-                                                                            controller:
-                                                                                custphn,
-                                                                            keyboardType:
-                                                                                TextInputType.phone,
-                                                                            decoration:
-                                                                                InputDecoration(
-                                                                              enabledBorder: const OutlineInputBorder(
-                                                                                borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                                                                                borderSide: BorderSide(
-                                                                                  color: AppTheme.primary,
-                                                                                ),
-                                                                              ),
-                                                                              focusedBorder: const OutlineInputBorder(
-                                                                                borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                                                                                borderSide: BorderSide(
-                                                                                  color: AppTheme.primary,
-                                                                                ),
-                                                                              ),
-                                                                              disabledBorder: const OutlineInputBorder(
-                                                                                borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                                                                                borderSide: BorderSide(
-                                                                                  color: AppTheme.primary,
-                                                                                ),
-                                                                              ),
-                                                                              fillColor: Colors.white,
-                                                                              filled: true,
-                                                                              floatingLabelBehavior: FloatingLabelBehavior.auto,
-                                                                              labelText: "Phn No.",
-                                                                              labelStyle: TextStyle(
-                                                                                fontWeight: FontWeight.bold,
-                                                                                fontSize: RouteManager.width / 45,
-                                                                                color: AppTheme.primary,
-                                                                              ),
-                                                                              hintText: "Enter Customer's Phn.No",
-                                                                              hintStyle: TextStyle(
-                                                                                fontSize: RouteManager.width / 45,
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                          SizedBox(
-                                                                              height: RouteManager.width / 80),
-                                                                          TextField(
-                                                                            controller:
-                                                                                ttlpersons,
-                                                                            keyboardType:
-                                                                                TextInputType.phone,
-                                                                            decoration:
-                                                                                InputDecoration(
-                                                                              enabledBorder: const OutlineInputBorder(
-                                                                                borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                                                                                borderSide: BorderSide(
-                                                                                  color: AppTheme.primary,
-                                                                                ),
-                                                                              ),
-                                                                              focusedBorder: const OutlineInputBorder(
-                                                                                borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                                                                                borderSide: BorderSide(
-                                                                                  color: AppTheme.primary,
-                                                                                ),
-                                                                              ),
-                                                                              disabledBorder: const OutlineInputBorder(
-                                                                                borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                                                                                borderSide: BorderSide(
-                                                                                  color: AppTheme.primary,
-                                                                                ),
-                                                                              ),
-                                                                              fillColor: Colors.white,
-                                                                              filled: true,
-                                                                              floatingLabelBehavior: FloatingLabelBehavior.auto,
-                                                                              labelText: "Persons",
-                                                                              labelStyle: TextStyle(
-                                                                                fontWeight: FontWeight.bold,
-                                                                                fontSize: RouteManager.width / 45,
-                                                                                color: AppTheme.primary,
-                                                                              ),
-                                                                              hintText: "Enter Total Persons",
-                                                                              hintStyle: TextStyle(
-                                                                                fontSize: RouteManager.width / 45,
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                          SizedBox(
-                                                                              height: RouteManager.width / 80),
-                                                                          TextField(
-                                                                            controller:
-                                                                                ttladvance,
-                                                                            keyboardType:
-                                                                                TextInputType.phone,
-                                                                            decoration:
-                                                                                InputDecoration(
-                                                                              enabledBorder: const OutlineInputBorder(
-                                                                                borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                                                                                borderSide: BorderSide(
-                                                                                  color: AppTheme.primary,
-                                                                                ),
-                                                                              ),
-                                                                              focusedBorder: const OutlineInputBorder(
-                                                                                borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                                                                                borderSide: BorderSide(
-                                                                                  color: AppTheme.primary,
-                                                                                ),
-                                                                              ),
-                                                                              disabledBorder: const OutlineInputBorder(
-                                                                                borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                                                                                borderSide: BorderSide(
-                                                                                  color: AppTheme.primary,
-                                                                                ),
-                                                                              ),
-                                                                              floatingLabelBehavior: FloatingLabelBehavior.auto,
-                                                                              labelText: "Advance",
-                                                                              labelStyle: TextStyle(
-                                                                                fontWeight: FontWeight.bold,
-                                                                                fontSize: RouteManager.width / 45,
-                                                                                color: AppTheme.primary,
-                                                                              ),
-                                                                              fillColor: Colors.white,
-                                                                              filled: true,
-                                                                              hintText: "Enter Total Advance",
-                                                                              hintStyle: TextStyle(
-                                                                                fontSize: RouteManager.width / 45,
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                          SizedBox(
-                                                                              height: RouteManager.width / 80),
-                                                                          ElevatedButton(
-                                                                            style:
-                                                                                ElevatedButton.styleFrom(
-                                                                              backgroundColor: AppTheme.primary,
-                                                                            ),
-                                                                            onPressed:
-                                                                                () {
-                                                                              if (custname.text.isEmpty || custphn.text.isEmpty || ttlpersons.text.isEmpty || ttladvance.text.isEmpty) {
-                                                                                ft.Fluttertoast.showToast(
-                                                                                  msg: "Please fill all fields",
-                                                                                  toastLength: ft.Toast.LENGTH_SHORT,
-                                                                                );
-                                                                                return;
-                                                                              }
-                                                                              try {
-                                                                                if (int.parse(ttlpersons.text) <= 0) {
-                                                                                  ft.Fluttertoast.showToast(
-                                                                                    msg: "Invalid Total Persons",
-                                                                                    toastLength: ft.Toast.LENGTH_SHORT,
-                                                                                  );
-                                                                                  return;
-                                                                                }
-                                                                              } catch (e) {
-                                                                                ft.Fluttertoast.showToast(
-                                                                                  msg: "Invalid Total Persons",
-                                                                                  toastLength: ft.Toast.LENGTH_SHORT,
-                                                                                );
-                                                                                return;
-                                                                              }
-                                                                              MyServer.addBooking(
-                                                                                Provider.of<AllTablesPro>(cont, listen: false).areaid,
-                                                                                Provider.of<AllTablesPro>(cont, listen: false).mytables[i].tableid,
-                                                                                Provider.of<HomePro>(cont, listen: false).d!,
-                                                                                custname.text,
-                                                                                custphn.text,
-                                                                                int.parse(ttlpersons.text),
-                                                                                int.parse(ttladvance.text),
-                                                                                context,
-                                                                              ).then((value) {
-                                                                                setState(() {});
-                                                                                setState(() {});
-                                                                                if (value) {
-                                                                                  setState(() {});
-                                                                                  setState(() {});
-                                                                                  ft.Fluttertoast.showToast(
-                                                                                    msg: "Table Booked",
-                                                                                    toastLength: ft.Toast.LENGTH_SHORT,
-                                                                                  );
-                                                                                  Navigator.of(context, rootNavigator: true).pop();
-                                                                                } else {
-                                                                                  setState(() {});
-                                                                                  setState(() {});
-                                                                                  ft.Fluttertoast.showToast(
-                                                                                    msg: "Failed",
-                                                                                    toastLength: ft.Toast.LENGTH_SHORT,
-                                                                                  );
-                                                                                }
-                                                                                setState(() {});
-                                                                                setState(() {});
-                                                                              });
-                                                                            },
-                                                                            child:
-                                                                                Text(
-                                                                              "Confirm",
-                                                                              style: TextStyle(fontSize: RouteManager.width / 45),
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    )
-                                                                  ],
-                                                                )
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      );
-                                                    }).then((value) {
-                                                  setState(() {});
-                                                  custname.text = "";
-                                                  custphn.text = "";
-                                                  ttlpersons.text = "";
-                                                  ttladvance.text = "";
-                                                });
-                                              } else {
-                                                showDialog(
-                                                    context: context,
-                                                    builder: (cont) {
-                                                      DateTime todaydate =
-                                                          DateTime.now();
-                                                      print(
-                                                          "TODAY DATE:::::::::::::::::::::::::::::::::::::;;$todaydate");
-                                                      return SingleChildScrollView(
-                                                        child: AlertDialog(
-                                                          title: Row(
-                                                            children: [
-                                                              InkWell(
-                                                                onTap: () {
-                                                                  Navigator.of(
-                                                                          context,
-                                                                          rootNavigator:
-                                                                              true)
-                                                                      .pop();
-                                                                },
-                                                                child: Icon(
-                                                                  Icons.close,
-                                                                  color: AppTheme
-                                                                      .danger,
-                                                                  size: RouteManager
-                                                                          .height /
-                                                                      13,
-                                                                ),
-                                                              ),
-                                                              SizedBox(
-                                                                width: RouteManager
-                                                                        .width /
-                                                                    15,
-                                                              ),
-                                                              Text(
-                                                                "Booking Details",
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontSize:
-                                                                      RouteManager
-                                                                              .width /
-                                                                          40,
-                                                                  color: AppTheme
-                                                                      .danger,
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          content: SizedBox(
-                                                            width: RouteManager
-                                                                    .width /
-                                                                1.9,
-                                                            // height: RouteManager.height / 1.5,
-                                                            child: Column(
-                                                              children: [
-                                                                SizedBox(
-                                                                    height:
-                                                                        RouteManager.width /
-                                                                            70),
-                                                                Row(
-                                                                  children: [
-                                                                    Text(
-                                                                      "Name :  ",
-                                                                      style:
-                                                                          TextStyle(
-                                                                        fontSize:
-                                                                            RouteManager.width /
-                                                                                45,
-                                                                        fontWeight:
-                                                                            FontWeight.bold,
-                                                                      ),
-                                                                    ),
-                                                                    Container(
-                                                                      constraints:
-                                                                          BoxConstraints(
-                                                                        maxWidth:
-                                                                            RouteManager.width /
-                                                                                1.5,
-                                                                      ),
-                                                                      child:
-                                                                          Text(
-                                                                        Provider.of<AllTablesPro>(cont,
-                                                                                listen: false)
-                                                                            .mytables[i]
-                                                                            .booking!
-                                                                            .name,
-                                                                        softWrap:
-                                                                            true,
-                                                                        style:
-                                                                            TextStyle(
-                                                                          fontSize:
-                                                                              RouteManager.width / 45,
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                SizedBox(
-                                                                    height:
-                                                                        RouteManager.width /
-                                                                            60),
-                                                                Row(
-                                                                  children: [
-                                                                    Text(
-                                                                      "Contact :  ",
-                                                                      style:
-                                                                          TextStyle(
-                                                                        fontSize:
-                                                                            RouteManager.width /
-                                                                                45,
-                                                                        fontWeight:
-                                                                            FontWeight.bold,
-                                                                      ),
-                                                                    ),
-                                                                    Container(
-                                                                      constraints:
-                                                                          BoxConstraints(
-                                                                        maxWidth:
-                                                                            RouteManager.width /
-                                                                                1.5,
-                                                                      ),
-                                                                      child:
-                                                                          Text(
-                                                                        Provider.of<AllTablesPro>(cont,
-                                                                                listen: false)
-                                                                            .mytables[i]
-                                                                            .booking!
-                                                                            .phn,
-                                                                        style:
-                                                                            TextStyle(
-                                                                          fontSize:
-                                                                              RouteManager.width / 45,
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                SizedBox(
-                                                                    height:
-                                                                        RouteManager.width /
-                                                                            60),
-                                                                Row(
-                                                                  children: [
-                                                                    Text(
-                                                                      "Booked On : ",
-                                                                      style:
-                                                                          TextStyle(
-                                                                        fontSize:
-                                                                            RouteManager.width /
-                                                                                45,
-                                                                        fontWeight:
-                                                                            FontWeight.bold,
-                                                                      ),
-                                                                    ),
-                                                                    Container(
-                                                                      constraints:
-                                                                          BoxConstraints(
-                                                                        maxWidth:
-                                                                            RouteManager.width /
-                                                                                1.5,
-                                                                      ),
-                                                                      child:
-                                                                          Text(
-                                                                        "${Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.booked_on.day} ${MyServer.months[Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.booked_on.month]} ${Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.booked_on.year}",
-                                                                        style:
-                                                                            TextStyle(
-                                                                          fontSize:
-                                                                              RouteManager.width / 45,
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                SizedBox(
-                                                                    height:
-                                                                        RouteManager.width /
-                                                                            60),
-                                                                Row(
-                                                                  children: [
-                                                                    Text(
-                                                                      "Booked For : ",
-                                                                      style:
-                                                                          TextStyle(
-                                                                        fontSize:
-                                                                            RouteManager.width /
-                                                                                45,
-                                                                        fontWeight:
-                                                                            FontWeight.bold,
-                                                                      ),
-                                                                    ),
-                                                                    Container(
-                                                                      constraints:
-                                                                          BoxConstraints(
-                                                                        maxWidth:
-                                                                            RouteManager.width /
-                                                                                3.3,
-                                                                      ),
-                                                                      child:
-                                                                          Row(
-                                                                        children: [
-                                                                          Text(
-                                                                            "${Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.booked_for.day} ${MyServer.months[Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.booked_for.month]} ${Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.booked_for.year} ",
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize: RouteManager.width / 45,
-                                                                            ),
-                                                                          ),
-                                                                          Container(
-                                                                            decoration:
-                                                                                const BoxDecoration(
-                                                                              borderRadius: BorderRadius.all(
-                                                                                Radius.circular(20),
-                                                                              ),
-                                                                              color: AppTheme.danger,
-                                                                            ),
-                                                                            padding:
-                                                                                EdgeInsets.all(
-                                                                              RouteManager.width / 100,
-                                                                            ),
-                                                                            child:
-                                                                                Builder(
-                                                                              builder: (context) {
-                                                                                String hour = Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.booked_for.hour.toString();
-                                                                                String minute = Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.booked_for.minute.toString();
-                                                                                if (hour.length <= 1) {
-                                                                                  hour = "0$hour";
-                                                                                }
-                                                                                if (minute.length <= 1) {
-                                                                                  minute = "0$minute";
-                                                                                }
-                                                                                return Text(
-                                                                                  "$hour:$minute",
-                                                                                  style: TextStyle(
-                                                                                    color: Colors.white,
-                                                                                    fontSize: RouteManager.width / 45,
-                                                                                  ),
-                                                                                );
-                                                                              },
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                SizedBox(
-                                                                    height:
-                                                                        RouteManager.width /
-                                                                            60),
-                                                                Row(
-                                                                  children: [
-                                                                    Text(
-                                                                      "Total Persons :  ",
-                                                                      style:
-                                                                          TextStyle(
-                                                                        fontSize:
-                                                                            RouteManager.width /
-                                                                                45,
-                                                                        fontWeight:
-                                                                            FontWeight.bold,
-                                                                      ),
-                                                                    ),
-                                                                    Container(
-                                                                      constraints:
-                                                                          BoxConstraints(
-                                                                        maxWidth:
-                                                                            RouteManager.width /
-                                                                                1.5,
-                                                                      ),
-                                                                      child:
-                                                                          Text(
-                                                                        Provider.of<AllTablesPro>(cont,
-                                                                                listen: false)
-                                                                            .mytables[i]
-                                                                            .booking!
-                                                                            .ttlpersons
-                                                                            .toString(),
-                                                                        style:
-                                                                            TextStyle(
-                                                                          fontSize:
-                                                                              RouteManager.width / 45,
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                SizedBox(
-                                                                    height:
-                                                                        RouteManager.width /
-                                                                            60),
-                                                                Row(
-                                                                  children: [
-                                                                    Text(
-                                                                      "Advance :  ",
-                                                                      style:
-                                                                          TextStyle(
-                                                                        fontSize:
-                                                                            RouteManager.width /
-                                                                                45,
-                                                                        fontWeight:
-                                                                            FontWeight.bold,
-                                                                      ),
-                                                                    ),
-                                                                    Container(
-                                                                      constraints:
-                                                                          BoxConstraints(
-                                                                        maxWidth:
-                                                                            RouteManager.width /
-                                                                                1.5,
-                                                                      ),
-                                                                      child:
-                                                                          Text(
-                                                                        Provider.of<AllTablesPro>(cont,
-                                                                                listen: false)
-                                                                            .mytables[i]
-                                                                            .booking!
-                                                                            .advance
-                                                                            .toString(),
-                                                                        style:
-                                                                            TextStyle(
-                                                                          fontSize:
-                                                                              RouteManager.width / 45,
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    Text(
-                                                                      " DH",
-                                                                      style:
-                                                                          TextStyle(
-                                                                        fontSize:
-                                                                            RouteManager.width /
-                                                                                45,
-                                                                        fontWeight:
-                                                                            FontWeight.bold,
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                SizedBox(
-                                                                    height:
-                                                                        RouteManager.width /
-                                                                            60),
-                                                                Provider.of<AllTablesPro>(cont,
-                                                                                listen: false)
-                                                                            .mytables[i]
-                                                                            .booking!
-                                                                            .check_in !=
-                                                                        null
-                                                                    ? Column(
-                                                                        children: [
-                                                                          Row(
-                                                                            children: [
-                                                                              Text(
-                                                                                "Check In Time :  ",
-                                                                                style: TextStyle(
-                                                                                  fontSize: RouteManager.width / 45,
-                                                                                  fontWeight: FontWeight.bold,
-                                                                                ),
-                                                                              ),
-                                                                              Text(
-                                                                                "${Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.check_in!.year} ${MyServer.months[Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.check_in!.month]} ${Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.check_in!.day} ",
-                                                                                style: TextStyle(
-                                                                                  fontSize: RouteManager.width / 45,
-                                                                                ),
-                                                                              ),
-                                                                              Container(
-                                                                                decoration: const BoxDecoration(
-                                                                                  borderRadius: BorderRadius.all(
-                                                                                    Radius.circular(20),
-                                                                                  ),
-                                                                                  color: AppTheme.danger,
-                                                                                ),
-                                                                                padding: EdgeInsets.all(
-                                                                                  RouteManager.width / 100,
-                                                                                ),
-                                                                                child: Builder(
-                                                                                  builder: (context) {
-                                                                                    String hour = Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.check_in!.hour.toString();
-                                                                                    String minute = Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.check_in!.minute.toString();
-                                                                                    if (hour.length <= 1) {
-                                                                                      hour = "0$hour";
-                                                                                    }
-                                                                                    if (minute.length <= 1) {
-                                                                                      minute = "0$minute";
-                                                                                    }
-                                                                                    return Text(
-                                                                                      "$hour:$minute",
-                                                                                      style: TextStyle(
-                                                                                        color: Colors.white,
-                                                                                        fontSize: RouteManager.width / 45,
-                                                                                      ),
-                                                                                    );
-                                                                                  },
-                                                                                ),
-                                                                              ),
-                                                                            ],
-                                                                          ),
-                                                                          SizedBox(
-                                                                              height: RouteManager.width / 60),
-                                                                        ],
-                                                                      )
-                                                                    : const SizedBox(),
-                                                                Row(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .center,
-                                                                  children: [
-                                                                    Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.check_in ==
-                                                                            null
-                                                                        ? ElevatedButton(
-                                                                            style:
-                                                                                ElevatedButton.styleFrom(
-                                                                              backgroundColor: AppTheme.danger,
-                                                                            ),
-                                                                            onPressed:
-                                                                                () {
-                                                                              MyServer.cancel(
-                                                                                Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.bookid,
-                                                                              ).then((value) {
-                                                                                if (value) {
-                                                                                  ft.Fluttertoast.showToast(
-                                                                                    msg: "Cancelled",
-                                                                                    toastLength: ft.Toast.LENGTH_SHORT,
-                                                                                  );
-                                                                                  Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking = null;
-                                                                                  setState(() {});
-                                                                                }
-                                                                              });
-                                                                              Navigator.of(context, rootNavigator: true).pop();
-                                                                            },
-                                                                            child:
-                                                                                Text(
-                                                                              "Cancel Booking",
-                                                                              style: TextStyle(fontSize: RouteManager.width / 45),
-                                                                            ),
-                                                                          )
-                                                                        : ElevatedButton(
-                                                                            style:
-                                                                                ElevatedButton.styleFrom(
-                                                                              backgroundColor: AppTheme.danger,
-                                                                            ),
-                                                                            onPressed:
-                                                                                () {
-                                                                              DateTime dd = DateTime.now();
-                                                                              MyServer.checkOut(Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.bookid, dd).then((value) {
-                                                                                if (value) {
-                                                                                  ft.Fluttertoast.showToast(
-                                                                                    msg: "Checked Out",
-                                                                                    toastLength: ft.Toast.LENGTH_SHORT,
-                                                                                  );
-                                                                                }
-                                                                                Navigator.of(context, rootNavigator: true).pop();
-                                                                                Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking = null;
-                                                                                setState(() {});
-                                                                              });
-                                                                              print("VALUE IS : : : : :${Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.check_in}");
-                                                                            },
-                                                                            child:
-                                                                                Text(
-                                                                              "Check Out",
-                                                                              style: TextStyle(fontSize: RouteManager.width / 45),
-                                                                            ),
-                                                                          ),
-                                                                    Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.check_in ==
-                                                                                null &&
-                                                                            "${Provider.of<HomePro>(context).d!.year}-${Provider.of<HomePro>(context).d!.month}-${Provider.of<HomePro>(context).d!.day}" ==
-                                                                                "${todaydate.year}-${todaydate.month}-${todaydate.day}"
-                                                                        ? Row(
-                                                                            children: [
-                                                                              SizedBox(
-                                                                                width: RouteManager.width / 50,
-                                                                              ),
-                                                                              ElevatedButton(
-                                                                                style: ElevatedButton.styleFrom(
-                                                                                  backgroundColor: AppTheme.success,
-                                                                                ),
-                                                                                onPressed: () {
-                                                                                  DateTime dd = DateTime.now();
-                                                                                  MyServer.checkIn(
-                                                                                    Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.bookid,
-                                                                                    dd,
-                                                                                  ).then((value) {
-                                                                                    if (value) {
-                                                                                      ft.Fluttertoast.showToast(
-                                                                                        msg: "Checked In",
-                                                                                        toastLength: ft.Toast.LENGTH_SHORT,
-                                                                                      );
-                                                                                    }
-                                                                                    Navigator.of(context, rootNavigator: true).pop();
-                                                                                    Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.check_in = dd;
-                                                                                    setState(() {});
-                                                                                  });
-                                                                                  print("VALUE IS : : : : :${Provider.of<AllTablesPro>(cont, listen: false).mytables[i].booking!.check_in}");
-                                                                                },
-                                                                                child: Text(
-                                                                                  "Check In",
-                                                                                  style: TextStyle(fontSize: RouteManager.width / 45),
-                                                                                ),
-                                                                              ),
-                                                                            ],
-                                                                          )
-                                                                        : const SizedBox(),
-                                                                  ],
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      );
-                                                    });
-                                              }
-                                            },
-                                            child: Stack(
-                                              children: [
-                                                Container(
-                                                  width:
-                                                      RouteManager.height / 5.5,
-                                                  height:
-                                                      RouteManager.height / 5.5,
-                                                  decoration: BoxDecoration(
-                                                    // border: Provider.of<AllTablesPro>(context, listen: false).mytables[i].booking != null
-                                                    //     ? Provider.of<AllTablesPro>(context, listen: false).mytables[i].booking!.check_in == null
-                                                    //         ? Border.all(
-                                                    //             color: AppTheme.danger,
-                                                    //             width: RouteManager.height / 40,
-                                                    //           )
-                                                    //         : Border.all(
-                                                    //             color: AppTheme.success,
-                                                    //             width: RouteManager.height / 40,
-                                                    //           )
-                                                    //     : null,
-                                                    shape:
-                                                        Provider.of<AllTablesPro>(
-                                                                        context,
-                                                                        listen:
-                                                                            false)
-                                                                    .mytables[i]
-                                                                    .shape ==
-                                                                "circle"
-                                                            ? BoxShape.circle
-                                                            : BoxShape
-                                                                .rectangle,
-                                                    image: Provider.of<AllTablesPro>(
-                                                                    context,
-                                                                    listen:
-                                                                        false)
-                                                                .mytables[i]
-                                                                .shape ==
-                                                            "circle"
-                                                        ? const DecorationImage(
-                                                            image: AssetImage(
-                                                                "images/circle.png"),
-                                                            fit: BoxFit.fill)
-                                                        : const DecorationImage(
-                                                            image: AssetImage(
-                                                                "images/Square.png"),
-                                                            fit: BoxFit.fill),
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  width:
-                                                      RouteManager.height / 5.5,
-                                                  height:
-                                                      RouteManager.height / 5.5,
-                                                  child: Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Container(
-                                                            constraints: BoxConstraints(
-                                                                maxWidth:
-                                                                    RouteManager
-                                                                            .height /
-                                                                        5.511),
-                                                            padding: EdgeInsets
-                                                                .all(RouteManager
-                                                                        .height /
-                                                                    80),
-                                                            decoration:
-                                                                const BoxDecoration(
-                                                              color: AppTheme
-                                                                  .primary,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .all(
-                                                                Radius.circular(
-                                                                    20),
-                                                              ),
-                                                            ),
-                                                            child: Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .center,
-                                                              children: [
-                                                                Flexible(
-                                                                  child:
-                                                                      DefaultTextStyle(
-                                                                    style:
-                                                                        TextStyle(
-                                                                      fontSize:
-                                                                          RouteManager.height /
-                                                                              30,
-                                                                      color: Colors
-                                                                          .white,
-                                                                    ),
-                                                                    child: Text(
-                                                                      Provider.of<AllTablesPro>(
-                                                                              context,
-                                                                              listen:
-                                                                                  false)
-                                                                          .mytables[
-                                                                              i]
-                                                                          .tablename,
-                                                                      maxLines:
-                                                                          1,
-                                                                      overflow:
-                                                                          TextOverflow
-                                                                              .ellipsis,
-                                                                      style:
-                                                                          TextStyle(
-                                                                        fontSize:
-                                                                            RouteManager.height /
-                                                                                30,
-                                                                        color: Colors
-                                                                            .white,
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Opacity(
-                                                  opacity:
-                                                      Provider.of<AllTablesPro>(
-                                                                      context,
-                                                                      listen:
-                                                                          false)
-                                                                  .mytables[i]
-                                                                  .booking !=
-                                                              null
-                                                          ? 0.88
-                                                          : 0,
-                                                  child: Container(
-                                                    width: RouteManager.height /
-                                                        5.5,
-                                                    height:
-                                                        RouteManager.height /
-                                                            5.5,
-                                                    decoration: BoxDecoration(
-                                                      color:
-                                                          AppTheme.surfaceMuted,
-                                                      shape: Provider.of<AllTablesPro>(
-                                                                      context,
-                                                                      listen:
-                                                                          false)
-                                                                  .mytables[i]
-                                                                  .shape ==
-                                                              "circle"
-                                                          ? BoxShape.circle
-                                                          : BoxShape.rectangle,
-                                                      // image: DecorationImage(image: AssetImage("images/wood.jpg"), fit: BoxFit.fill),
-                                                    ),
-                                                  ),
-                                                ),
-                                                Provider.of<AllTablesPro>(
-                                                                context,
-                                                                listen: false)
-                                                            .mytables[i]
-                                                            .booking !=
-                                                        null
-                                                    ? Column(
-                                                        children: [
-                                                          SizedBox(
-                                                            height: Provider.of<AllTablesPro>(
-                                                                            context,
-                                                                            listen:
-                                                                                false)
-                                                                        .mytables[
-                                                                            i]
-                                                                        .booking!
-                                                                        .check_in ==
-                                                                    null
-                                                                ? RouteManager
-                                                                        .width /
-                                                                    40
-                                                                : RouteManager
-                                                                        .width /
-                                                                    60,
-                                                          ),
-                                                          Transform.rotate(
-                                                            angle: 18,
-                                                            child: Text(
-                                                              Provider.of<AllTablesPro>(
-                                                                              context,
-                                                                              listen:
-                                                                                  false)
-                                                                          .mytables[
-                                                                              i]
-                                                                          .booking!
-                                                                          .check_in ==
-                                                                      null
-                                                                  ? "Booked"
-                                                                  : " Checked\r\n      In",
-                                                              style: TextStyle(
-                                                                color: Provider.of<AllTablesPro>(context, listen: false)
-                                                                            .mytables[
-                                                                                i]
-                                                                            .booking!
-                                                                            .check_in ==
-                                                                        null
-                                                                    ? AppTheme
-                                                                        .danger
-                                                                    : const Color
-                                                                        .fromARGB(
-                                                                        255,
-                                                                        60,
-                                                                        145,
-                                                                        63),
-                                                                fontSize: Provider.of<AllTablesPro>(context, listen: false)
-                                                                            .mytables[
-                                                                                i]
-                                                                            .booking!
-                                                                            .check_in ==
-                                                                        null
-                                                                    ? RouteManager
-                                                                            .width /
-                                                                        50
-                                                                    : RouteManager
-                                                                            .width /
-                                                                        57,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      )
-                                                    : const SizedBox(),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  );
-                                }),
-                              );
-                              print("ADDED TO MYWLIST----------------$i");
-                            }
-                            Provider.of<AllTablesPro>(context, listen: false)
-                                .tables = Stack(children: [...mywlist]);
-                            // Provider.of<AllTablesPro>(context, listen: false).notifyListenerz();
-                            return Provider.of<AllTablesPro>(context,
-                                    listen: false)
-                                .tables;
-                          }),
-                  ),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: RouteManager.height / 90,
+          backgroundColor: AppTheme.background,
+          body: Consumer2<AllTablesPro, HomePro>(
+            builder: (context, tablesPro, homePro, child) {
+              if (!tablesPro.isloaded) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final date = homePro.d ?? DateTime.now();
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final booked = tablesPro.mytables
+                      .where((table) => table.booking != null)
+                      .length;
+
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: _BookingFloor(
+                          areaName: tablesPro.areaname,
+                          date: date,
+                          tables: tablesPro.mytables,
+                          onTableTap: _handleTableTap,
                         ),
-                        Container(
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppTheme.primary,
-                          ),
-                          child: IconButton(
-                              onPressed: () {
-                                Navigator.of(context, rootNavigator: true)
-                                    .pop();
-                              },
-                              icon: Icon(Icons.arrow_back_ios_new_rounded,
-                                  size: RouteManager.width / 30)),
+                      ),
+                      SizedBox(
+                        width: constraints.maxWidth < 760 ? 220 : 280,
+                        child: _BookingSummary(
+                          areaName: tablesPro.areaname,
+                          date: date,
+                          totalTables: tablesPro.mytables.length,
+                          bookedTables: booked,
+                          onBack: () => Navigator.of(context).maybePop(),
                         ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: RouteManager.height / 2,
-                    ),
-                  ],
-                )
-              ],
-            ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
           ),
         ),
       ),
     );
   }
+
+  void _handleTableTap(int index) {
+    final table =
+        Provider.of<AllTablesPro>(context, listen: false).mytables[index];
+    if (table.booking == null) {
+      _showNewBookingDialog(index);
+    } else {
+      _showBookingDetails(index);
+    }
+  }
+
+  Future<void> _showNewBookingDialog(int index) async {
+    final tablesPro = Provider.of<AllTablesPro>(context, listen: false);
+    final date = Provider.of<HomePro>(context, listen: false).d!;
+    final table = tablesPro.mytables[index];
+
+    final booking = await showDialog<_BookingFormData>(
+      context: context,
+      builder: (dialogContext) => _NewBookingDialog(
+        areaName: tablesPro.areaname,
+        tableName: table.tablename,
+        date: date,
+      ),
+    );
+    if (!mounted || booking == null) {
+      return;
+    }
+
+    final saved = await MyServer.addBooking(
+      tablesPro.areaid,
+      table.tableid,
+      date,
+      booking.name,
+      booking.phone,
+      booking.persons,
+      booking.advance,
+      context,
+    );
+    if (!mounted) {
+      return;
+    }
+    if (saved) {
+      tablesPro.notifyListenerz();
+      ft.Fluttertoast.showToast(
+        msg: "Table booked",
+        toastLength: ft.Toast.LENGTH_SHORT,
+      );
+    }
+  }
+
+  Future<void> _showBookingDetails(int index) async {
+    final tablesPro = Provider.of<AllTablesPro>(context, listen: false);
+    final table = tablesPro.mytables[index];
+    final booking = table.booking!;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(table.tablename),
+          content: SizedBox(
+            width: 420,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _InfoRow(label: "Customer", value: booking.name),
+                _InfoRow(label: "Phone", value: booking.phn),
+                _InfoRow(
+                    label: "Persons", value: booking.ttlpersons.toString()),
+                _InfoRow(label: "Advance", value: booking.advance.toString()),
+                _InfoRow(
+                  label: "Booked for",
+                  value: DateFormat('dd MMM yyyy, hh:mm a')
+                      .format(booking.booked_for),
+                ),
+                _InfoRow(
+                  label: "Check-in",
+                  value: booking.check_in == null
+                      ? "Not checked in"
+                      : DateFormat('hh:mm a').format(booking.check_in!),
+                ),
+                _InfoRow(
+                  label: "Check-out",
+                  value: booking.check_out == null
+                      ? "Not checked out"
+                      : DateFormat('hh:mm a').format(booking.check_out!),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text("Close"),
+            ),
+            TextButton(
+              onPressed: () => _cancelBooking(dialogContext, table, booking),
+              style: TextButton.styleFrom(foregroundColor: AppTheme.danger),
+              child: const Text("Cancel Booking"),
+            ),
+            if (booking.check_in == null)
+              ElevatedButton(
+                onPressed: () => _checkIn(dialogContext, table, booking),
+                child: const Text("Check In"),
+              )
+            else if (booking.check_out == null)
+              ElevatedButton(
+                onPressed: () => _checkOut(dialogContext, table, booking),
+                child: const Text("Check Out"),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _cancelBooking(
+    BuildContext dialogContext,
+    TableObject table,
+    BookingObject booking,
+  ) async {
+    final ok = await MyServer.cancel(booking.bookid);
+    if (!mounted) {
+      return;
+    }
+    if (ok) {
+      table.booking = null;
+      Provider.of<AllTablesPro>(context, listen: false).notifyListenerz();
+      Navigator.of(dialogContext).pop();
+    }
+  }
+
+  Future<void> _checkIn(
+    BuildContext dialogContext,
+    TableObject table,
+    BookingObject booking,
+  ) async {
+    final now = DateTime.now();
+    final ok = await MyServer.checkIn(booking.bookid, now);
+    if (!mounted) {
+      return;
+    }
+    if (ok) {
+      booking.check_in = now;
+      Provider.of<AllTablesPro>(context, listen: false).notifyListenerz();
+      Navigator.of(dialogContext).pop();
+    }
+  }
+
+  Future<void> _checkOut(
+    BuildContext dialogContext,
+    TableObject table,
+    BookingObject booking,
+  ) async {
+    final now = DateTime.now();
+    final ok = await MyServer.checkOut(booking.bookid, now);
+    if (!mounted) {
+      return;
+    }
+    if (ok) {
+      booking.check_out = now;
+      table.booking = null;
+      Provider.of<AllTablesPro>(context, listen: false).notifyListenerz();
+      Navigator.of(dialogContext).pop();
+    }
+  }
+}
+
+class _BookingFormData {
+  const _BookingFormData({
+    required this.name,
+    required this.phone,
+    required this.persons,
+    required this.advance,
+  });
+
+  final String name;
+  final String phone;
+  final int persons;
+  final int advance;
+}
+
+class _NewBookingDialog extends StatefulWidget {
+  const _NewBookingDialog({
+    required this.areaName,
+    required this.tableName,
+    required this.date,
+  });
+
+  final String areaName;
+  final String tableName;
+  final DateTime date;
+
+  @override
+  State<_NewBookingDialog> createState() => _NewBookingDialogState();
+}
+
+class _NewBookingDialogState extends State<_NewBookingDialog> {
+  final TextEditingController _name = TextEditingController();
+  final TextEditingController _phone = TextEditingController();
+  final TextEditingController _persons = TextEditingController();
+  final TextEditingController _advance = TextEditingController(text: "0");
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _phone.dispose();
+    _persons.dispose();
+    _advance.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final persons = int.tryParse(_persons.text.trim());
+    final advance = int.tryParse(_advance.text.trim());
+    if (_name.text.trim().isEmpty ||
+        _phone.text.trim().isEmpty ||
+        persons == null ||
+        persons <= 0 ||
+        advance == null) {
+      ft.Fluttertoast.showToast(
+        msg: "Enter valid booking details",
+        toastLength: ft.Toast.LENGTH_SHORT,
+      );
+      return;
+    }
+
+    Navigator.of(context).pop(
+      _BookingFormData(
+        name: _name.text.trim(),
+        phone: _phone.text.trim(),
+        persons: persons,
+        advance: advance,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text("New Booking"),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _InfoRow(label: "Area", value: widget.areaName),
+              _InfoRow(label: "Table", value: widget.tableName),
+              _InfoRow(
+                label: "Date",
+                value: DateFormat('dd MMM yyyy, hh:mm a').format(widget.date),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: _name,
+                autofocus: true,
+                decoration: const InputDecoration(labelText: "Customer name"),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _phone,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(labelText: "Phone number"),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _persons,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: "Persons"),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _advance,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: "Advance"),
+                onSubmitted: (_) => _submit(),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          onPressed: _submit,
+          child: const Text("Book Table"),
+        ),
+      ],
+    );
+  }
+}
+
+class _BookingFloor extends StatelessWidget {
+  const _BookingFloor({
+    required this.areaName,
+    required this.date,
+    required this.tables,
+    required this.onTableTap,
+  });
+
+  final String areaName;
+  final DateTime date;
+  final List<TableObject> tables;
+  final ValueChanged<int> onTableTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(areaName,
+                        style: Theme.of(context).textTheme.titleLarge),
+                    Text(
+                      DateFormat('EEEE, dd MMM yyyy • hh:mm a').format(date),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(color: AppTheme.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+              const _LegendDot(color: AppTheme.success, label: "Available"),
+              const SizedBox(width: 12),
+              const _LegendDot(color: AppTheme.danger, label: "Booked"),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: AppTheme.floorSurface,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppTheme.border),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x16000000),
+                    blurRadius: 18,
+                    offset: Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final size =
+                        Size(constraints.maxWidth, constraints.maxHeight);
+                    return Stack(
+                      children: [
+                        Positioned.fill(
+                          child: CustomPaint(painter: _FloorGridPainter()),
+                        ),
+                        if (tables.isEmpty)
+                          const Center(child: Text("No tables in this area")),
+                        for (int i = 0; i < tables.length; i++)
+                          Positioned(
+                            left: tables[i].dx.clamp(8.0, size.width - 88),
+                            top: tables[i].dy.clamp(8.0, size.height - 92),
+                            child: _BookableTable(
+                              table: tables[i],
+                              onTap: () => onTableTap(i),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BookableTable extends StatelessWidget {
+  const _BookableTable({required this.table, required this.onTap});
+
+  final TableObject table;
+  final VoidCallback onTap;
+
+  static const Map<String, String> _assets = {
+    "table": "images/table.png",
+    "big_table": "images/big_table.png",
+    "circle": "images/circle.png",
+    "square": "images/Square.png",
+    "round_bed": "images/round_bed.png",
+    "bed_beach": "images/bed_beach.png",
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final booked = table.booking != null;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Container(
+          width: 88,
+          height: 92,
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: booked ? AppTheme.danger : AppTheme.success,
+              width: 2,
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x18000000),
+                blurRadius: 12,
+                offset: Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                child: Image.asset(
+                  _assets[table.shape] ?? "images/table.png",
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                table.tablename,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 3),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: booked ? AppTheme.danger : AppTheme.success,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  child: Text(
+                    booked ? "Booked" : "Open",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BookingSummary extends StatelessWidget {
+  const _BookingSummary({
+    required this.areaName,
+    required this.date,
+    required this.totalTables,
+    required this.bookedTables,
+    required this.onBack,
+  });
+
+  final String areaName;
+  final DateTime date;
+  final int totalTables;
+  final int bookedTables;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final available = totalTables - bookedTables;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(0, 14, 14, 14),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text("Booking", style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 6),
+          Text(
+            "Tap an available table to create a booking.",
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: AppTheme.textSecondary),
+          ),
+          const SizedBox(height: 16),
+          _StatCard(label: "Total", value: totalTables.toString()),
+          _StatCard(label: "Available", value: available.toString()),
+          _StatCard(label: "Booked", value: bookedTables.toString()),
+          const Spacer(),
+          OutlinedButton.icon(
+            onPressed: onBack,
+            icon: const Icon(Icons.arrow_back),
+            label: const Text("Back"),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  const _StatCard({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.background,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: Text(label)),
+          Text(value, style: Theme.of(context).textTheme.titleMedium),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 96,
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: AppTheme.textSecondary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Expanded(child: Text(value)),
+        ],
+      ),
+    );
+  }
+}
+
+class _LegendDot extends StatelessWidget {
+  const _LegendDot({required this.color, required this.label});
+
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 5),
+        Text(label, style: Theme.of(context).textTheme.bodySmall),
+      ],
+    );
+  }
+}
+
+class _FloorGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.18)
+      ..strokeWidth = 1;
+    const step = 32.0;
+
+    for (double x = step; x < size.width; x += step) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    for (double y = step; y < size.height; y += step) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
