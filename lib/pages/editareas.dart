@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import 'package:fluttertoast/fluttertoast.dart' as ft;
+import 'package:provider/provider.dart';
 import 'package:table_booking/Providers/manageareapro.dart';
+import 'package:table_booking/theme/app_theme.dart';
+
 import '../Api & Routes/routes.dart';
-// import '../Providers/alltablespro (deleted).dart';
 import '../Providers/editareaspro.dart';
 import '../myserver.dart';
 
@@ -16,24 +17,27 @@ class EditAreas extends StatefulWidget {
 }
 
 class _EditAreasState extends State<EditAreas> {
-  TextEditingController areaname = TextEditingController();
-  // TextEditingController tablename = TextEditingController();
+  final TextEditingController _areaName = TextEditingController();
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    loadAllAreas(context);
+    _loadAllAreas();
   }
 
-  void loadAllAreas(BuildContext context) async {
-    while (true) {
-      var value = await MyServer.getEditAllAreas(context);
+  @override
+  void dispose() {
+    _areaName.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadAllAreas() async {
+    while (mounted) {
+      final value = await MyServer.getEditAllAreas(context);
       if (value) {
-        // Provider.of<EditAreasPro>(context, listen: false).reload = !Provider.of<AllAreasPro>(context, listen: false).reload;
-        Provider.of<EditAreasPro>(context, listen: false).isloaded = true;
-        Provider.of<EditAreasPro>(context, listen: false).notifyListenerz();
-        print("AYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaa");
+        final provider = Provider.of<EditAreasPro>(context, listen: false);
+        provider.isloaded = true;
+        provider.notifyListenerz();
         break;
       }
     }
@@ -47,481 +51,228 @@ class _EditAreasState extends State<EditAreas> {
           if (!didPop) {
             return;
           }
-          Provider.of<EditAreasPro>(context, listen: false).areas = [];
-          Provider.of<EditAreasPro>(context, listen: false).isloaded = false;
+          Provider.of<EditAreasPro>(context, listen: false).clearAll();
         },
         child: Scaffold(
           appBar: AppBar(
-            backgroundColor: const Color.fromARGB(255, 55, 253, 18),
-            title: Row(
-              children: [
-                SizedBox(width: RouteManager.width / 4.2),
-                Text("Areas",
-                    style: TextStyle(fontSize: RouteManager.width / 17)),
-              ],
-            ),
+            centerTitle: true,
+            title: const Text("Areas"),
           ),
-          body: !Provider.of<EditAreasPro>(context).isloaded
-              ? const Center(
-                  child: CircularProgressIndicator(
-                    color: Color.fromARGB(255, 55, 253, 18),
-                  ),
-                )
-              : Provider.of<EditAreasPro>(context).areas.isEmpty
-                  ? Center(
-                      child: Text(
-                        "No Areas Added",
-                        style: TextStyle(
-                          fontSize: RouteManager.width / 17,
-                          color: const Color.fromARGB(255, 55, 253, 18),
-                        ),
-                      ),
-                    )
-                  : SingleChildScrollView(
-                      child: SizedBox(
-                        height: RouteManager.height / 1.114,
-                        // color: Colors.blue,
-                        child: ListView.builder(
-                          itemCount:
-                              Provider.of<EditAreasPro>(context).areas.length,
-                          itemBuilder: (cont, index) {
-                            return Column(
-                              children: [
-                                SizedBox(
-                                  height: RouteManager.width / 40,
-                                ),
-                                SizedBox(
-                                  width: RouteManager.width,
-                                  child: Card(
-                                    color: const Color.fromARGB(
-                                        255, 236, 219, 219),
-                                    child: Stack(
-                                      children: [
-                                        Column(
-                                          children: [
-                                            SizedBox(
-                                              height: RouteManager.width / 39,
-                                            ),
-                                            Row(
-                                              children: [
-                                                SizedBox(
-                                                  width:
-                                                      RouteManager.width / 39,
-                                                ),
-                                                Container(
-                                                  decoration:
-                                                      const BoxDecoration(
-                                                    color: Color.fromARGB(
-                                                        255, 55, 253, 18),
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                      Radius.circular(20),
-                                                    ),
-                                                  ),
-                                                  padding: EdgeInsets.all(
-                                                      RouteManager.width / 30),
-                                                  width:
-                                                      RouteManager.width / 1.3,
-                                                  child: Text(
-                                                    Provider.of<EditAreasPro>(
-                                                            context)
-                                                        .areas[index]
-                                                        .areaname, // +
-                                                    // "asdsadasdadkajdalsdlakjdaldjalkdjaskjdaldlasjdajdlksajdasjdlajddjlasjdksajdlsadjsalkddlasdlkjsadkajdksajdksajdsakjdsadjsadsadsad",
-                                                    style: TextStyle(
-                                                      fontSize:
-                                                          RouteManager.width /
-                                                              18,
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                          backgroundColor:
-                                                              Colors.green),
-                                                  onPressed: () {
-                                                    Provider.of<ManageAreaPro>(
-                                                            context,
-                                                            listen: false)
-                                                        .areaid = Provider.of<
-                                                                EditAreasPro>(
-                                                            context,
-                                                            listen: false)
-                                                        .areas[index]
-                                                        .areaid;
-                                                    Provider.of<ManageAreaPro>(
-                                                            context,
-                                                            listen: false)
-                                                        .areaname = Provider.of<
-                                                                EditAreasPro>(
-                                                            context,
-                                                            listen: false)
-                                                        .areas[index]
-                                                        .areaname;
-                                                    SystemChrome
-                                                        .setPreferredOrientations(
-                                                      [
-                                                        DeviceOrientation
-                                                            .landscapeRight,
-                                                        DeviceOrientation
-                                                            .landscapeLeft,
-                                                      ],
-                                                    ).then((value) {
-                                                      Navigator.of(context)
-                                                          .pushNamed(
-                                                        RouteManager
-                                                            .manageareapage,
-                                                      );
-                                                    });
-                                                  },
-                                                  child: Text(
-                                                    "Manage",
-                                                    style: TextStyle(
-                                                        fontSize:
-                                                            RouteManager.width /
-                                                                19),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            SizedBox(
-                                              height: RouteManager.width / 39,
-                                            ),
-                                          ],
-                                        ),
-                                        Column(
-                                          children: [
-                                            SizedBox(
-                                              height: RouteManager.width / 100,
-                                            ),
-                                            Row(
-                                              children: [
-                                                SizedBox(
-                                                    width: RouteManager.width /
-                                                        1.16),
-                                                InkWell(
-                                                  onTap: () {
-                                                    // areaname.text=Provider.of<EditAreasPro>(context,listen:false).areas[index].areaname;
-                                                    showDialog(
-                                                      context: context,
-                                                      builder: (cont) {
-                                                        return Dialog(
-                                                          child: Container(
-                                                            width: RouteManager
-                                                                .width,
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(10),
-                                                            decoration:
-                                                                const BoxDecoration(
-                                                              // color: Color.fromRGBO(101, 106, 121, 1),
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .all(
-                                                                Radius.circular(
-                                                                    20),
-                                                              ),
-                                                            ),
-                                                            child:
-                                                                SingleChildScrollView(
-                                                              child: Column(
-                                                                children: [
-                                                                  Container(
-                                                                    padding: EdgeInsets.all(
-                                                                        RouteManager.width /
-                                                                            70),
-                                                                    width: RouteManager
-                                                                        .width,
-                                                                    decoration:
-                                                                        BoxDecoration(
-                                                                      color: const Color
-                                                                          .fromARGB(
-                                                                          255,
-                                                                          55,
-                                                                          253,
-                                                                          18),
-                                                                      borderRadius:
-                                                                          BorderRadius
-                                                                              .all(
-                                                                        Radius.circular(RouteManager.width /
-                                                                            23),
-                                                                      ),
-                                                                    ),
-                                                                    child: Row(
-                                                                      children: [
-                                                                        InkWell(
-                                                                          onTap:
-                                                                              () {
-                                                                            Navigator.of(context, rootNavigator: true).pop();
-                                                                          },
-                                                                          child:
-                                                                              Icon(
-                                                                            Icons.close,
-                                                                            color:
-                                                                                Colors.black,
-                                                                            size:
-                                                                                RouteManager.width / 13,
-                                                                          ),
-                                                                        ),
-                                                                        SizedBox(
-                                                                          width:
-                                                                              RouteManager.width / 13,
-                                                                        ),
-                                                                        Text(
-                                                                          "Update Area",
-                                                                          style:
-                                                                              TextStyle(
-                                                                            color:
-                                                                                Colors.white,
-                                                                            fontWeight:
-                                                                                FontWeight.bold,
-                                                                            fontSize:
-                                                                                RouteManager.width / 15,
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                  SizedBox(
-                                                                      height:
-                                                                          RouteManager.width /
-                                                                              10),
-                                                                  TextField(
-                                                                    controller:
-                                                                        areaname,
-                                                                    decoration:
-                                                                        InputDecoration(
-                                                                      enabledBorder:
-                                                                          const OutlineInputBorder(
-                                                                        borderRadius:
-                                                                            BorderRadius.all(Radius.circular(5.0)),
-                                                                        borderSide:
-                                                                            BorderSide(
-                                                                          color: Color.fromARGB(
-                                                                              255,
-                                                                              55,
-                                                                              253,
-                                                                              18),
-                                                                        ),
-                                                                      ),
-                                                                      focusedBorder:
-                                                                          const OutlineInputBorder(
-                                                                        borderRadius:
-                                                                            BorderRadius.all(Radius.circular(5.0)),
-                                                                        borderSide:
-                                                                            BorderSide(
-                                                                          color: Color.fromARGB(
-                                                                              255,
-                                                                              55,
-                                                                              253,
-                                                                              18),
-                                                                        ),
-                                                                      ),
-                                                                      disabledBorder:
-                                                                          const OutlineInputBorder(
-                                                                        borderRadius:
-                                                                            BorderRadius.all(Radius.circular(5.0)),
-                                                                        borderSide:
-                                                                            BorderSide(
-                                                                          color: Color.fromARGB(
-                                                                              255,
-                                                                              55,
-                                                                              253,
-                                                                              18),
-                                                                        ),
-                                                                      ),
-                                                                      fillColor:
-                                                                          Colors
-                                                                              .white,
-                                                                      filled:
-                                                                          true,
-                                                                      floatingLabelBehavior:
-                                                                          FloatingLabelBehavior
-                                                                              .auto,
-                                                                      labelText:
-                                                                          "Area Name",
-                                                                      labelStyle:
-                                                                          TextStyle(
-                                                                        fontWeight:
-                                                                            FontWeight.bold,
-                                                                        fontSize:
-                                                                            RouteManager.width /
-                                                                                23,
-                                                                        color: const Color
-                                                                            .fromARGB(
-                                                                            255,
-                                                                            55,
-                                                                            253,
-                                                                            18),
-                                                                      ),
-                                                                      hintText:
-                                                                          "Enter Area's Name",
-                                                                      hintStyle:
-                                                                          TextStyle(
-                                                                        fontSize:
-                                                                            RouteManager.width /
-                                                                                24,
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                  SizedBox(
-                                                                      height:
-                                                                          RouteManager.width /
-                                                                              20),
-                                                                  ElevatedButton(
-                                                                    style: ElevatedButton
-                                                                        .styleFrom(
-                                                                      backgroundColor: const Color
-                                                                          .fromARGB(
-                                                                          255,
-                                                                          55,
-                                                                          253,
-                                                                          18),
-                                                                    ),
-                                                                    onPressed:
-                                                                        () {
-                                                                      if (areaname
-                                                                              .text ==
-                                                                          "") {
-                                                                        ft.Fluttertoast
-                                                                            .showToast(
-                                                                          msg:
-                                                                              "Please Enter Area Name",
-                                                                          toastLength: ft
-                                                                              .Toast
-                                                                              .LENGTH_SHORT,
-                                                                        );
-                                                                        return;
-                                                                      }
-                                                                      MyServer.updateAreaNAme(
-                                                                              Provider.of<EditAreasPro>(context, listen: false).areas[index].areaid,
-                                                                              areaname.text)
-                                                                          .then((value) {
-                                                                        if (value) {
-                                                                          ft.Fluttertoast
-                                                                              .showToast(
-                                                                            msg:
-                                                                                "Updated Successfully",
-                                                                            toastLength:
-                                                                                ft.Toast.LENGTH_SHORT,
-                                                                          );
-                                                                          Provider.of<EditAreasPro>(context, listen: false)
-                                                                              .areas[index]
-                                                                              .areaname = areaname.text;
-                                                                          Provider.of<EditAreasPro>(context, listen: false)
-                                                                              .notifyListenerz();
-                                                                          areaname.text =
-                                                                              "";
-                                                                        }
-                                                                        Navigator.of(context,
-                                                                                rootNavigator: true)
-                                                                            .pop();
-                                                                      });
-                                                                    },
-                                                                    child: Text(
-                                                                      "Confirm",
-                                                                      style: TextStyle(
-                                                                          fontSize:
-                                                                              RouteManager.width / 21),
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        );
-                                                      },
-                                                    ).then((value) {
-                                                      areaname.text = "";
-                                                    });
-                                                  },
-                                                  child: Icon(
-                                                    Icons.edit,
-                                                    size:
-                                                        RouteManager.width / 13,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            SizedBox(
-                                                height:
-                                                    RouteManager.width / 18),
-                                            Row(
-                                              children: [
-                                                SizedBox(
-                                                    width: RouteManager.width /
-                                                        1.16),
-                                                InkWell(
-                                                  onTap: () async {
-                                                    var value = await MyServer
-                                                        .checkTablesCount(Provider
-                                                                .of<EditAreasPro>(
-                                                                    context,
-                                                                    listen:
-                                                                        false)
-                                                            .areas[index]
-                                                            .areaid);
-                                                    if (!value) {
-                                                      value = await MyServer
-                                                          .deleteArea(Provider
-                                                                  .of<EditAreasPro>(
-                                                                      context,
-                                                                      listen:
-                                                                          false)
-                                                              .areas[index]
-                                                              .areaid);
-                                                      if (value) {
-                                                        Provider.of<EditAreasPro>(
-                                                                context,
-                                                                listen: false)
-                                                            .areas
-                                                            .removeAt(index);
+          body: Consumer<EditAreasPro>(
+            builder: (context, provider, child) {
+              if (!provider.isloaded) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (provider.areas.isEmpty) {
+                return _EmptyState(
+                  icon: Icons.grid_view,
+                  title: "No areas added",
+                  message: "Add an area from the home menu to manage tables.",
+                );
+              }
 
-                                                        setState(() {});
-                                                      }
-                                                    } else {
-                                                      ft.Fluttertoast.showToast(
-                                                        msg: "has Tables",
-                                                        toastLength: ft
-                                                            .Toast.LENGTH_SHORT,
-                                                      );
-                                                    }
-                                                  },
-                                                  child: Icon(
-                                                    Icons.delete,
-                                                    color: const Color.fromARGB(
-                                                        255, 55, 253, 18),
-                                                    size:
-                                                        RouteManager.width / 13,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            SizedBox(
-                                              height: RouteManager.width / 100,
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
+              return ListView.separated(
+                padding: const EdgeInsets.all(16),
+                physics: const BouncingScrollPhysics(),
+                itemCount: provider.areas.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final area = provider.areas[index];
+                  return Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 46,
+                            height: 46,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.table_restaurant,
+                              color: AppTheme.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              area.areaname,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ),
+                          IconButton(
+                            tooltip: "Edit",
+                            onPressed: () => _showUpdateAreaDialog(index),
+                            icon: const Icon(Icons.edit_outlined),
+                          ),
+                          IconButton(
+                            tooltip: "Delete",
+                            onPressed: () => _deleteArea(index),
+                            color: AppTheme.danger,
+                            icon: const Icon(Icons.delete_outline),
+                          ),
+                          const SizedBox(width: 4),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.success,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 14),
+                            ),
+                            onPressed: () => _manageArea(index),
+                            child: const Text("Manage"),
+                          ),
+                        ],
                       ),
                     ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _manageArea(int index) {
+    final area = Provider.of<EditAreasPro>(context, listen: false).areas[index];
+    final managePro = Provider.of<ManageAreaPro>(context, listen: false);
+    managePro.areaid = area.areaid;
+    managePro.areaname = area.areaname;
+
+    SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.landscapeRight, DeviceOrientation.landscapeLeft],
+    ).then((value) {
+      Navigator.of(context).pushNamed(RouteManager.manageareapage);
+    });
+  }
+
+  Future<void> _showUpdateAreaDialog(int index) async {
+    final provider = Provider.of<EditAreasPro>(context, listen: false);
+    _areaName.text = provider.areas[index].areaname;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text("Update Area"),
+          content: TextField(
+            controller: _areaName,
+            autofocus: true,
+            textInputAction: TextInputAction.done,
+            decoration: const InputDecoration(hintText: "Enter area name"),
+            onSubmitted: (_) => _updateArea(dialogContext, index),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () => _updateArea(dialogContext, index),
+              child: const Text("Save"),
+            ),
+          ],
+        );
+      },
+    );
+
+    _areaName.clear();
+  }
+
+  Future<void> _updateArea(BuildContext dialogContext, int index) async {
+    final name = _areaName.text.trim();
+    if (name.isEmpty) {
+      ft.Fluttertoast.showToast(
+        msg: "Please enter area name",
+        toastLength: ft.Toast.LENGTH_SHORT,
+      );
+      return;
+    }
+
+    final provider = Provider.of<EditAreasPro>(context, listen: false);
+    final updated =
+        await MyServer.updateAreaNAme(provider.areas[index].areaid, name);
+    if (!mounted) {
+      return;
+    }
+    if (updated) {
+      provider.areas[index].areaname = name;
+      provider.notifyListenerz();
+      Navigator.of(dialogContext).pop();
+      ft.Fluttertoast.showToast(
+        msg: "Updated successfully",
+        toastLength: ft.Toast.LENGTH_SHORT,
+      );
+    }
+  }
+
+  Future<void> _deleteArea(int index) async {
+    final provider = Provider.of<EditAreasPro>(context, listen: false);
+    final area = provider.areas[index];
+    final hasTables = await MyServer.checkTablesCount(area.areaid);
+    if (!mounted) {
+      return;
+    }
+    if (hasTables) {
+      ft.Fluttertoast.showToast(
+        msg: "Remove tables before deleting this area",
+        toastLength: ft.Toast.LENGTH_SHORT,
+      );
+      return;
+    }
+
+    final deleted = await MyServer.deleteArea(area.areaid);
+    if (!mounted) {
+      return;
+    }
+    if (deleted) {
+      provider.areas.removeAt(index);
+      provider.notifyListenerz();
+      ft.Fluttertoast.showToast(
+        msg: "Area deleted",
+        toastLength: ft.Toast.LENGTH_SHORT,
+      );
+    }
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({
+    required this.icon,
+    required this.title,
+    required this.message,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 44, color: AppTheme.textSecondary),
+            const SizedBox(height: 12),
+            Text(title, style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 6),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: AppTheme.textSecondary),
+            ),
+          ],
         ),
       ),
     );

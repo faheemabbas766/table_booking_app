@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:fluttertoast/fluttertoast.dart' as ft;
+import 'package:provider/provider.dart';
+import 'package:table_booking/theme/app_theme.dart';
+
 import '../Api & Routes/routes.dart';
-// import '../Providers/alltablespro (deleted).dart';
 import '../Providers/homepro.dart';
 import '../myserver.dart';
 
@@ -14,549 +15,296 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  TextEditingController areaname = TextEditingController();
-  TextEditingController tablename = TextEditingController();
+  final TextEditingController _areaName = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
+  void dispose() {
+    _areaName.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final shortestSide = MediaQuery.sizeOf(context).shortestSide;
+    final logoSize = shortestSide.clamp(120.0, 190.0);
+
     return SafeArea(
       child: Scaffold(
-        drawer: Drawer(
-          shape: RoundedRectangleBorder(
-            side: const BorderSide(
-              color: Color.fromARGB(255, 255, 18, 18),
-              width: 1,
-            ),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          width: RouteManager.width / 2.4,
-          elevation: 3,
-          child: Padding(
-            padding: EdgeInsets.only(left: RouteManager.width / 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: RouteManager.width / 13,
-                ),
-                SizedBox(
-                  width: RouteManager.width / 3.4,
-                  height: RouteManager.width / 3.4,
-                  child: Image.asset("images/logo.png"),
-                ),
-                SizedBox(
-                  height: RouteManager.width / 10,
-                ),
-                InkWell(
-                  onTap: () {
-                    // Navigator.of(context).pushNamed(
-                    //   RouteManager.createareapage,
-                    // );
-                    // return;
-                    showDialog(
-                        context: context,
-                        builder: (cont) {
-                          return AlertDialog(
-                            title: Row(
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    Navigator.of(context, rootNavigator: true)
-                                        .pop();
-                                  },
-                                  child: Icon(
-                                    Icons.close,
-                                    size: RouteManager.width / 14,
-                                    color: Colors.red,
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: RouteManager.width / 6.2,
-                                ),
-                                Text(
-                                  "New Area",
-                                  style: TextStyle(
-                                    fontSize: RouteManager.width / 21,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            content: SizedBox(
-                              width: RouteManager.width,
-                              height: RouteManager.height / 7.7,
-                              child: Column(children: [
-                                TextField(
-                                  controller: areaname,
-                                  decoration: InputDecoration(
-                                    fillColor: Colors.white,
-                                    filled: true,
-                                    floatingLabelBehavior:
-                                        FloatingLabelBehavior.auto,
-                                    hintText: "Enter Area Name",
-                                    hintStyle: TextStyle(
-                                      fontSize: RouteManager.width / 24,
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: RouteManager.width / 23),
-                                ElevatedButton(
-                                    onPressed: () {
-                                      if (areaname.text.isEmpty) {
-                                        ft.Fluttertoast.showToast(
-                                          msg: "Please Enter Area Name",
-                                          toastLength: ft.Toast.LENGTH_SHORT,
-                                        );
-                                        return;
-                                      }
-                                      MyServer.addArea(areaname.text)
-                                          .then((value) {
-                                        if (value) {
-                                          Provider.of<HomePro>(context,
-                                                      listen: false)
-                                                  .totalareas =
-                                              Provider.of<HomePro>(context,
-                                                          listen: false)
-                                                      .totalareas! +
-                                                  1;
-                                          Provider.of<HomePro>(context,
-                                                  listen: false)
-                                              .notifyListenerz();
-                                          ft.Fluttertoast.showToast(
-                                            msg:
-                                                "Area '${areaname.text}' Added",
-                                            toastLength: ft.Toast.LENGTH_SHORT,
-                                          );
-                                          Navigator.of(context,
-                                                  rootNavigator: true)
-                                              .pop();
-                                          areaname.text = "";
-                                        } else {
-                                          ft.Fluttertoast.showToast(
-                                            msg: "Area Already Exists",
-                                            toastLength: ft.Toast.LENGTH_SHORT,
-                                          );
-                                        }
-                                      });
-                                    },
-                                    child: Text(
-                                      "Confirm",
-                                      style: TextStyle(
-                                          fontSize: RouteManager.width / 20),
-                                    ))
-                              ]),
-                            ),
-                          );
-                        }).then((value) {
-                      areaname.text = "";
-                    });
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(RouteManager.width / 23),
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(RouteManager.width / 23),
-                        bottomLeft: Radius.circular(RouteManager.width / 23),
-                      ),
-                    ),
-                    child: Stack(
-                      children: [
-                        Icon(Icons.add_circle,
-                            color: Colors.white, size: RouteManager.width / 16),
-                        Text(
-                          "      Area",
-                          style: TextStyle(
-                              fontSize: RouteManager.width / 20,
-                              color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                // SizedBox(height: RouteManager.width / 19),
-                // InkWell(
-                //   onTap: () {
-                //     if (Provider.of<HomePro>(context, listen: false).totalareas == 0) {
-                //       return;
-                //     }
-                //     showDialog(
-                //         context: context,
-                //         builder: (cont) {
-                //           return AlertDialog(
-                //             title: const Text("New Table"),
-                //             content: Container(
-                //               width: RouteManager.width,
-                //               height: RouteManager.height / 7.7,
-                //               child: Column(children: [
-                //                 TextField(
-                //                   controller: tablename,
-                //                   decoration: InputDecoration(
-                //                     fillColor: Colors.white,
-                //                     filled: true,
-                //                     // labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: RouteManager.width / 16),
-                //                     floatingLabelBehavior: FloatingLabelBehavior.auto,
-                //                     // labelText: "New Area",
-                //                     hintText: "Enter Table Name",
-                //                     hintStyle: TextStyle(
-                //                       // fontWeight: FontWeight.bold,
-                //                       fontSize: RouteManager.width / 24,
-                //                     ),
-                //                   ),
-                //                 ),
-                //                 SizedBox(height: RouteManager.width / 23),
-                //                 ElevatedButton(
-                //                   onPressed: () {
-                //                     if (tablename.text.isEmpty) {
-                //                       ft.Fluttertoast.showToast(
-                //                         msg: "Please Enter Table Name",
-                //                         toastLength: ft.Toast.LENGTH_SHORT,
-                //                       );
-                //                       return;
-                //                     }
-                //                     MyServer.addTable(tablename.text).then((value) {
-                //                       if (value) {
-                //                         // Provider.of<HomePro>(context, listen: false).totalareas = Provider.of<HomePro>(context, listen: false).totalareas! + 1;
-                //                         ft.Fluttertoast.showToast(
-                //                           msg: "Table '" + tablename.text + "' Added",
-                //                           toastLength: ft.Toast.LENGTH_SHORT,
-                //                         );
-                //                         tablename.text = "";
-                //                         Navigator.of(context, rootNavigator: true).pop();
-                //                       } else {
-                //                         ft.Fluttertoast.showToast(
-                //                           msg: "Table Already Exists",
-                //                           toastLength: ft.Toast.LENGTH_SHORT,
-                //                         );
-                //                       }
-                //                     });
-                //                   },
-                //                   child: Text(
-                //                     "Confirm",
-                //                     style: TextStyle(fontSize: RouteManager.width / 20),
-                //                   ),
-                //                 )
-                //               ]),
-                //             ),
-                //           );
-                //         }).then((value) {
-                //       tablename.text = "";
-                //     });
-                //   },
-                //   child: Container(
-                //     padding: EdgeInsets.all(RouteManager.width / 23),
-                //     decoration: BoxDecoration(
-                //       color: Provider.of<HomePro>(context, listen: false).totalareas == 0 ? Colors.grey : Colors.blue,
-                //       borderRadius: BorderRadius.only(
-                //         topRight: Radius.circular(RouteManager.width / 23),
-                //         bottomLeft: Radius.circular(RouteManager.width / 23),
-                //       ),
-                //     ),
-                //     child: Stack(
-                //       children: [
-                //         Icon(Icons.add_circle, color: Colors.white, size: RouteManager.width / 16),
-                //         Text(
-                //           "      Table",
-                //           style: TextStyle(fontSize: RouteManager.width / 20, color: Colors.white),
-                //         ),
-                //       ],
-                //     ),
-                //   ),
-                // ),
-                SizedBox(height: RouteManager.width / 6),
-                InkWell(
-                  onTap: () {
-                    Navigator.of(context).pushNamed(
-                      RouteManager.editareaspage,
-                    );
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(RouteManager.width / 23),
-                    decoration: const BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.all(Radius.circular(50)),
-                    ),
-                    child: Stack(
-                      children: [
-                        Text(
-                          " All Areas",
-                          style: TextStyle(
-                              fontSize: RouteManager.width / 20,
-                              color: Colors.white),
-                        ),
-                        // Icon(Icons.arrow)
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: RouteManager.width / 20),
-                // InkWell(
-                //   onTap: () {
-                //     Navigator.of(context).pushNamed(
-                //       RouteManager.edittablespage,
-                //     );
-                //   },
-                //   child: Container(
-                //     padding: EdgeInsets.all(RouteManager.width / 23),
-                //     decoration: BoxDecoration(
-                //       color: Colors.blue,
-                //       borderRadius: BorderRadius.all(Radius.circular(50)),
-                //     ),
-                //     child: Stack(
-                //       children: [
-                //         Text(
-                //           " All Tables",
-                //           style: TextStyle(fontSize: RouteManager.width / 20, color: Colors.white),
-                //         ),
-                //       ],
-                //     ),
-                //   ),
-                // ),
-                SizedBox(height: RouteManager.width / 6),
-                InkWell(
-                  onTap: () {
-                    Navigator.of(context).pushNamed(
-                      RouteManager.searchpage,
-                    );
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(RouteManager.width / 23),
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 243, 75, 33),
-                      borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(RouteManager.width / 23),
-                        bottomRight: Radius.circular(RouteManager.width / 23),
-                      ),
-                    ),
-                    child: Stack(
-                      children: [
-                        Icon(Icons.search,
-                            color: Colors.white, size: RouteManager.width / 14),
-                        Text(
-                          "      Search",
-                          style: TextStyle(
-                              fontSize: RouteManager.width / 20,
-                              color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: RouteManager.width / 6),
-                InkWell(
-                  onTap: () {
-                    Navigator.of(context).pushNamed(
-                      RouteManager.edittablespage,
-                    );
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(RouteManager.width / 23),
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 243, 75, 33),
-                      borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(RouteManager.width / 23),
-                        bottomRight: Radius.circular(RouteManager.width / 23),
-                      ),
-                    ),
-                    child: Stack(
-                      children: [
-                        Icon(Icons.report_rounded,
-                            color: Colors.white, size: RouteManager.width / 14),
-                        Text(
-                          "      Report",
-                          style: TextStyle(
-                              fontSize: RouteManager.width / 20,
-                              color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        drawer: _HomeDrawer(onAddArea: _showAddAreaDialog),
         appBar: AppBar(
-          backgroundColor: const Color.fromARGB(255, 55, 253, 18),
-          title: Row(
-            children: [
-              SizedBox(width: RouteManager.width / 6),
-              Text("Book a Table",
-                  style: TextStyle(fontSize: RouteManager.width / 17)),
-            ],
-          ),
+          centerTitle: true,
+          title: const Text("Book a Table"),
         ),
-        body: SingleChildScrollView(
-          child: Center(
-            child: Column(
-              children: [
-                SizedBox(
-                  height: RouteManager.width / 3,
-                ),
-                Container(
-                  child: Image.asset("images/logo.png"),
-                ),
-                SizedBox(height: RouteManager.width / 10),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 55, 253, 18),
-                    padding: EdgeInsets.all(RouteManager.width / 20),
-                  ),
-                  onPressed: () async {
-                    if (Provider.of<HomePro>(context, listen: false)
-                            .totalareas ==
-                        0) {
-                      ft.Fluttertoast.showToast(
-                        msg: "No Area Added Yet",
-                        toastLength: ft.Toast.LENGTH_SHORT,
-                      );
-                      return;
-                    }
-                    Provider.of<HomePro>(context, listen: false).d = null;
-                    var d = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(
-                        const Duration(days: 365),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: logoSize,
+                      height: logoSize,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: AppTheme.surface,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: AppTheme.border),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x1A000000),
+                              blurRadius: 18,
+                              offset: Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(18),
+                          child: Image.asset("images/logo.png"),
+                        ),
                       ),
-                      builder: (context, child) {
-                        return Theme(
-                          data: Theme.of(context).copyWith(
-                            colorScheme: const ColorScheme.light(
-                              primary: Color.fromARGB(
-                                  255, 55, 253, 18), // <-- SEE HERE
-                              onPrimary: Colors.white, // <-- SEE HERE
-                              onSurface: Color.fromARGB(
-                                  255, 0, 94, 255), // <-- SEE HERE
-                            ),
-                            textButtonTheme: TextButtonThemeData(
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.red,
-                              ),
-                            ),
-                          ),
-                          child: child!,
-                        );
-                      },
-                    );
-                    if (d != null) {
-                      Provider.of<HomePro>(context, listen: false).d = d;
-                      // Provider.of<AllTablesPro>(context, listen: false).isbooking = true;
-                      print(
-                          "Value of d: ${Provider.of<HomePro>(context, listen: false).d}");
-                      TimeOfDay? pickedTime = await showTimePicker(
-                        initialTime: TimeOfDay.now(),
-                        context: context, //context of current state
-                        builder: (context, child) {
-                          return Theme(
-                            data: Theme.of(context).copyWith(
-                              colorScheme: const ColorScheme.light(
-                                primary: Color.fromARGB(
-                                    255, 55, 253, 18), // <-- SEE HERE
-                                onPrimary: Colors.white, // <-- SEE HERE
-                                onSurface: Color.fromARGB(
-                                    255, 0, 94, 255), // <-- SEE HERE
-                                // onBackground: Color.fromARGB(
-                                //                                 255, 55, 253, 18),
-                                surface: Color.fromARGB(255, 55, 253, 18),
-                              ),
-                              textButtonTheme: TextButtonThemeData(
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.red,
-                                ),
-                              ),
-                            ),
-                            child: child!,
-                          );
-                        },
-                      );
-                      if (pickedTime != null) {
-                        Provider.of<HomePro>(context, listen: false).d =
-                            DateTime(
-                          Provider.of<HomePro>(context, listen: false).d!.year,
-                          Provider.of<HomePro>(context, listen: false).d!.month,
-                          Provider.of<HomePro>(context, listen: false).d!.day,
-                          pickedTime.hour,
-                          pickedTime.minute,
-                        );
-                        print(
-                            "VALUE OF D : ${Provider.of<HomePro>(context, listen: false).d!}");
-                        Navigator.of(context).pushNamed(
-                          RouteManager.allareaspage,
-                        );
-                      }
-                    }
-                  },
-                  child: Text(
-                    "Book Now",
-                    style: TextStyle(fontSize: RouteManager.width / 20),
-                  ),
+                    ),
+                    const SizedBox(height: 28),
+                    Text(
+                      "Table Booking",
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Select a date and choose an available area to reserve a table.",
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(color: AppTheme.textSecondary),
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: ElevatedButton.icon(
+                        onPressed: _startBooking,
+                        icon: const Icon(Icons.event_available),
+                        label: const Text("Book Now"),
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(
-                  height: RouteManager.width / 4,
-                ),
-                // InkWell(
-                //   onTap: () {
-
-                //   },
-                //   child: Container(
-                //     width: RouteManager.width / 3,
-                //     height: RouteManager.width / 6,
-                //     padding: EdgeInsets.all(RouteManager.width / 23),
-                //     decoration: BoxDecoration(
-                //       color: Colors.blue,
-                //       borderRadius: BorderRadius.all(Radius.circular(RouteManager.width / 20)),
-                //     ),
-                //     child: Center(
-                //       child: Text(
-                //         "Add Area",
-                //         style: TextStyle(
-                //           color: Colors.white,
-                //           fontSize: RouteManager.width / 20,
-                //           fontWeight: FontWeight.w500,
-                //         ),
-                //       ),
-                //     ),
-                //   ),
-                // ),
-                // SizedBox(
-                //   height: RouteManager.width / 25,
-                // ),
-                // InkWell(
-                //   onTap: () {},
-                //   child: Container(
-                //     width: RouteManager.width / 3,
-                //     height: RouteManager.width / 6,
-                //     padding: EdgeInsets.all(RouteManager.width / 23),
-                //     decoration: BoxDecoration(
-                //       color: Provider.of<HomePro>(context, listen: false).totalareas == 0 ? Color.fromARGB(255, 187, 187, 187) : Colors.blue,
-                //       borderRadius: BorderRadius.all(Radius.circular(RouteManager.width / 20)),
-                //     ),
-                //     child: Center(
-                //       child: Text(
-                //         "Add Table",
-                //         style: TextStyle(
-                //           color: Colors.white,
-                //           fontSize: RouteManager.width / 20,
-                //           fontWeight: FontWeight.w500,
-                //         ),
-                //       ),
-                //     ),
-                //   ),
-                // ),
-                // SizedBox(
-                //   height: RouteManager.width / 25,
-                // ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
+      ),
+    );
+  }
+
+  Future<void> _showAddAreaDialog() async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text("New Area"),
+          content: TextField(
+            controller: _areaName,
+            autofocus: true,
+            textInputAction: TextInputAction.done,
+            decoration: const InputDecoration(
+              hintText: "Enter area name",
+            ),
+            onSubmitted: (_) => _addArea(dialogContext),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () => _addArea(dialogContext),
+              child: const Text("Add Area"),
+            ),
+          ],
+        );
+      },
+    );
+    _areaName.clear();
+  }
+
+  Future<void> _addArea(BuildContext dialogContext) async {
+    final name = _areaName.text.trim();
+    if (name.isEmpty) {
+      ft.Fluttertoast.showToast(
+        msg: "Please enter area name",
+        toastLength: ft.Toast.LENGTH_SHORT,
+      );
+      return;
+    }
+
+    final added = await MyServer.addArea(name);
+    if (!mounted) {
+      return;
+    }
+    if (added) {
+      final homePro = Provider.of<HomePro>(context, listen: false);
+      homePro.totalareas = (homePro.totalareas ?? 0) + 1;
+      homePro.notifyListenerz();
+      Navigator.of(dialogContext).pop();
+      ft.Fluttertoast.showToast(
+        msg: "Area '$name' added",
+        toastLength: ft.Toast.LENGTH_SHORT,
+      );
+    } else {
+      ft.Fluttertoast.showToast(
+        msg: "Area already exists",
+        toastLength: ft.Toast.LENGTH_SHORT,
+      );
+    }
+  }
+
+  Future<void> _startBooking() async {
+    if ((Provider.of<HomePro>(context, listen: false).totalareas ?? 0) == 0) {
+      ft.Fluttertoast.showToast(
+        msg: "No area added yet",
+        toastLength: ft.Toast.LENGTH_SHORT,
+      );
+      return;
+    }
+
+    final selectedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(data: AppTheme.pickerTheme(context), child: child!);
+      },
+    );
+    if (!mounted || selectedDate == null) {
+      return;
+    }
+
+    final pickedTime = await showTimePicker(
+      initialTime: TimeOfDay.now(),
+      context: context,
+      builder: (context, child) {
+        return Theme(data: AppTheme.pickerTheme(context), child: child!);
+      },
+    );
+    if (!mounted || pickedTime == null) {
+      return;
+    }
+
+    Provider.of<HomePro>(context, listen: false).d = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
+    Navigator.of(context).pushNamed(RouteManager.allareaspage);
+  }
+}
+
+class _HomeDrawer extends StatelessWidget {
+  const _HomeDrawer({required this.onAddArea});
+
+  final VoidCallback onAddArea;
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      width: MediaQuery.sizeOf(context).width.clamp(280.0, 340.0),
+      child: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.asset(
+                      "images/logo.png",
+                      width: 56,
+                      height: 56,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      "Dream Booking",
+                      style: Theme.of(context).textTheme.titleMedium,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            const SizedBox(height: 8),
+            _DrawerAction(
+              icon: Icons.add_business,
+              title: "Add Area",
+              onTap: () {
+                Navigator.of(context).pop();
+                onAddArea();
+              },
+            ),
+            _DrawerAction(
+              icon: Icons.grid_view,
+              title: "All Areas",
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pushNamed(RouteManager.editareaspage);
+              },
+            ),
+            _DrawerAction(
+              icon: Icons.search,
+              title: "Search",
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pushNamed(RouteManager.searchpage);
+              },
+            ),
+            _DrawerAction(
+              icon: Icons.assessment,
+              title: "Report",
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pushNamed(RouteManager.edittablespage);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DrawerAction extends StatelessWidget {
+  const _DrawerAction({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+      child: ListTile(
+        leading: Icon(icon, color: AppTheme.primary),
+        title: Text(title),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        onTap: onTap,
       ),
     );
   }

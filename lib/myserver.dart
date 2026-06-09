@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:table_booking/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:table_booking/Entities/areaobject.dart';
@@ -57,7 +58,7 @@ class MyServer {
                         width: RouteManager.width / 7,
                         height: RouteManager.width / 7,
                         child: const CircularProgressIndicator(
-                          color: Color.fromARGB(255, 243, 110, 100),
+                          color: AppTheme.accent,
                         ),
                       ),
                       DefaultTextStyle(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:table_booking/Providers/allareaspro.dart';
+import 'package:table_booking/theme/app_theme.dart';
 import 'Api & Routes/routes.dart';
 import 'Providers/alltablespro.dart';
 import 'Providers/manageareapro.dart';
@@ -39,11 +40,10 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    RouteManager.width = MediaQuery.of(context).size.width;
-    RouteManager.height = MediaQuery.of(context).size.height;
+    RouteManager.sync(context);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(),
+      theme: AppTheme.light,
       initialRoute: RouteManager.splashscreen,
       onGenerateRoute: RouteManager.generateRoute,
     );

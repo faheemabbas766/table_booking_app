@@ -69,14 +69,10 @@ flutter:
   - images/wood.jpg
   - images/table.png
   - images/circle.png
-  - images/square.png
+  - images/Square.png
   - images/round_bed.png
   - images/big_table.png
   - images/bed_beach.png
-  fonts:
-    - family: MyFonts
-      fonts:
-        - asset: fonts/ProgressPersonalUse-EaJdz.ttf
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

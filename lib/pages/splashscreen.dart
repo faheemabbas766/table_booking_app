@@ -1,5 +1,6 @@
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:table_booking/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -41,7 +42,7 @@ class _SplashScreenState extends State<SplashScreen> {
       splashIconSize: 100,
       centered: true,
       animationDuration: const Duration(seconds: 2),
-      backgroundColor: Colors.black,
+      backgroundColor: AppTheme.textPrimary,
     );
   }
 

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import 'package:fluttertoast/fluttertoast.dart' as ft;
-import '../Api & Routes/routes.dart';
-import '../Entities/tableobject.dart';
-import '../Providers/manageareapro.dart';
+import 'package:provider/provider.dart';
+import 'package:table_booking/Entities/tableobject.dart';
+import 'package:table_booking/Providers/manageareapro.dart';
+import 'package:table_booking/theme/app_theme.dart';
+
 import '../myserver.dart';
 
 class ManageArea extends StatefulWidget {
@@ -15,19 +16,25 @@ class ManageArea extends StatefulWidget {
 }
 
 class _ManageAreaState extends State<ManageArea> {
-  // TextEditingController areaname = TextEditingController();
-  TextEditingController tablename = TextEditingController();
+  int? _selectedIndex;
+
+  static const List<_TableShape> _shapes = [
+    _TableShape("table", "Table", "images/table.png"),
+    _TableShape("big_table", "Large", "images/big_table.png"),
+    _TableShape("circle", "Round", "images/circle.png"),
+    _TableShape("square", "Square", "images/Square.png"),
+    _TableShape("round_bed", "Round Bed", "images/round_bed.png"),
+    _TableShape("bed_beach", "Beach Bed", "images/bed_beach.png"),
+  ];
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    loadWholeArea(context);
+    _loadArea();
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -35,1856 +42,572 @@ class _ManageAreaState extends State<ManageArea> {
     super.dispose();
   }
 
-  loadWholeArea(BuildContext context) async {
-    SystemChrome.setPreferredOrientations(
-      [
-        DeviceOrientation.landscapeRight,
-        DeviceOrientation.landscapeLeft,
-      ],
-    ).then((value) async {
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        // setState(() {});
-        RouteManager.width = MediaQuery.of(context).size.width;
-        RouteManager.height = MediaQuery.of(context).size.height;
-        print(
-            "WIDTH=====================-----------------------${RouteManager.width}");
-        print(
-            "Height=====================-----------------------${RouteManager.height}");
-        while (true) {
-          var value = await MyServer.getWholeArea(
-              Provider.of<ManageAreaPro>(context, listen: false).areaid,
-              context);
-          if (value) {
-            print(
-                "LOADED TABLES===========================================================----------------------${Provider.of<ManageAreaPro>(context, listen: false).mytables}");
-            List<Widget> mywlist = [];
-            for (int i = 0;
-                i <
-                    Provider.of<ManageAreaPro>(context, listen: false)
-                        .mytables
-                        .length;
-                i++) {
-              mywlist.add(
-                Column(
-                  children: [
-                    SizedBox(
-                      height: Provider.of<ManageAreaPro>(context, listen: false)
-                          .mytables[i]
-                          .dy,
-                    ),
-                    Row(
-                      children: [
-                        SizedBox(
-                          width:
-                              Provider.of<ManageAreaPro>(context, listen: false)
-                                  .mytables[i]
-                                  .dx,
-                        ),
-                        InkWell(
-                          onTap: () {
-                            ft.Fluttertoast.showToast(
-                              msg: Provider.of<ManageAreaPro>(context,
-                                      listen: false)
-                                  .mytables[i]
-                                  .tablename,
-                              toastLength: ft.Toast.LENGTH_SHORT,
-                            );
-                          },
-                          child: Draggable<String>(
-                            data:
-                                "${Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape}-$i",
-                            // onDragUpdate: (c) {
-                            //   print("DRAG UPDATE DETAILS ::::::::::::::::" + c.toString());
-                            // },
-                            childWhenDragging: const SizedBox(),
-                            feedback: SizedBox(
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    width: RouteManager.height / 5.5,
-                                    height: RouteManager.height / 5.5,
-                                    decoration: BoxDecoration(
-                                      // color: Colors.red,
-                                      shape: Provider.of<ManageAreaPro>(context,
-                                                      listen: false)
-                                                  .mytables[i]
-                                                  .shape ==
-                                              "circle"
-                                          ? BoxShape.circle
-                                          : BoxShape.rectangle,
-                                      image: Provider.of<ManageAreaPro>(context, listen: false)
-                                                  .mytables[i]
-                                                  .shape ==
-                                              "circle"
-                                          ? const DecorationImage(
-                                              image: AssetImage(
-                                                  "images/circle.png"),
-                                              fit: BoxFit.fill)
-                                          : Provider.of<ManageAreaPro>(context, listen: false)
-                                                      .mytables[i]
-                                                      .shape ==
-                                                  "square"
-                                              ? const DecorationImage(
-                                                  image: AssetImage(
-                                                      "images/square.png"),
-                                                  fit: BoxFit.fill)
-                                              : Provider.of<ManageAreaPro>(context, listen: false)
-                                                          .mytables[i]
-                                                          .shape ==
-                                                      "bed_beach"
-                                                  ? const DecorationImage(
-                                                      image: AssetImage(
-                                                          "images/bed_beach.png"),
-                                                      fit: BoxFit.fill)
-                                                  : Provider.of<ManageAreaPro>(context, listen: false)
-                                                              .mytables[i]
-                                                              .shape ==
-                                                          "table"
-                                                      ? const DecorationImage(
-                                                          image: AssetImage("images/table.png"),
-                                                          fit: BoxFit.fill)
-                                                      : Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape == "big_table"
-                                                          ? const DecorationImage(image: AssetImage("images/big_table.png"), fit: BoxFit.fill)
-                                                          : const DecorationImage(image: AssetImage("images/round_bed.png"), fit: BoxFit.fill),
+  Future<void> _loadArea() async {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
 
-                                      // borderRadius: BorderRadius.all(Radius.circular(20)),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: RouteManager.height / 5.5,
-                                    height: RouteManager.height / 5.5,
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Container(
-                                              constraints: BoxConstraints(
-                                                maxWidth:
-                                                    RouteManager.height / 5.511,
-                                                maxHeight:
-                                                    RouteManager.height / 17,
-                                              ),
-                                              padding: EdgeInsets.all(
-                                                  RouteManager.height / 80),
-                                              decoration: const BoxDecoration(
-                                                color: Color.fromARGB(
-                                                    255, 55, 253, 18),
-                                                borderRadius: BorderRadius.all(
-                                                  Radius.circular(20),
-                                                ),
-                                              ),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Flexible(
-                                                    child: DefaultTextStyle(
-                                                      style: TextStyle(
-                                                        fontSize: RouteManager
-                                                                .height /
-                                                            30,
-                                                        color: Colors.white,
-                                                      ),
-                                                      child: Text(
-                                                        Provider.of<ManageAreaPro>(
-                                                                context,
-                                                                listen: false)
-                                                            .mytables[i]
-                                                            .tablename,
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: TextStyle(
-                                                          fontSize: RouteManager
-                                                                  .height /
-                                                              30,
-                                                          color: Colors.white,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            child: SizedBox(
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    width: RouteManager.height / 5.5,
-                                    height: RouteManager.height / 5.5,
-                                    decoration: BoxDecoration(
-                                      shape: Provider.of<ManageAreaPro>(context,
-                                                      listen: false)
-                                                  .mytables[i]
-                                                  .shape ==
-                                              "circle"
-                                          ? BoxShape.circle
-                                          : BoxShape.rectangle,
-                                      image: Provider.of<ManageAreaPro>(context, listen: false)
-                                                  .mytables[i]
-                                                  .shape ==
-                                              "circle"
-                                          ? const DecorationImage(
-                                              image: AssetImage(
-                                                  "images/circle.png"),
-                                              fit: BoxFit.fill)
-                                          : Provider.of<ManageAreaPro>(context, listen: false)
-                                                      .mytables[i]
-                                                      .shape ==
-                                                  "square"
-                                              ? const DecorationImage(
-                                                  image: AssetImage(
-                                                      "images/square.png"),
-                                                  fit: BoxFit.fill)
-                                              : Provider.of<ManageAreaPro>(context, listen: false)
-                                                          .mytables[i]
-                                                          .shape ==
-                                                      "bed_beach"
-                                                  ? const DecorationImage(
-                                                      image: AssetImage(
-                                                          "images/bed_beach.png"),
-                                                      fit: BoxFit.fill)
-                                                  : Provider.of<ManageAreaPro>(context, listen: false)
-                                                              .mytables[i]
-                                                              .shape ==
-                                                          "table"
-                                                      ? const DecorationImage(
-                                                          image: AssetImage("images/table.png"),
-                                                          fit: BoxFit.fill)
-                                                      : Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape == "big_table"
-                                                          ? const DecorationImage(image: AssetImage("images/big_table.png"), fit: BoxFit.fill)
-                                                          : const DecorationImage(image: AssetImage("images/round_bed.png"), fit: BoxFit.fill),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Container(
-                                          constraints: BoxConstraints(
-                                            maxWidth:
-                                                RouteManager.height / 5.511,
-                                            maxHeight:
-                                                RouteManager.height / 5.250,
-                                          ),
-                                          padding: EdgeInsets.all(
-                                              RouteManager.height / 80),
-                                          decoration: const BoxDecoration(
-                                            color: Color.fromARGB(
-                                                255, 55, 253, 18),
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(20),
-                                            ),
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Flexible(
-                                                child: DefaultTextStyle(
-                                                  style: TextStyle(
-                                                    fontSize:
-                                                        RouteManager.height /
-                                                            30,
-                                                    color: Colors.white,
-                                                  ),
-                                                  child: Text(
-                                                    Provider.of<ManageAreaPro>(
-                                                            context,
-                                                            listen: false)
-                                                        .mytables[i]
-                                                        .tablename,
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: TextStyle(
-                                                      fontSize:
-                                                          RouteManager.height /
-                                                              30,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-              print("ADDED TO MYWLIST----------------$i");
-            }
-            Provider.of<ManageAreaPro>(context, listen: false).tables =
-                Stack(children: [...mywlist]);
-            if (Provider.of<ManageAreaPro>(context, listen: false)
-                .mytables
-                .isNotEmpty) {
-              Provider.of<ManageAreaPro>(context, listen: false).isdonable =
-                  true;
-            }
-            Provider.of<ManageAreaPro>(context, listen: false).isloaded = true;
-            print(
-                "LOADEDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDd");
-            // Provider.of<ManageAreaPro>(context, listen: false).reload = !Provider.of<ManageAreaPro>(context, listen: false).reload;
-            // Provider.of<ManageAreaPro>(context, listen: false).isloaded = true;
-            Provider.of<ManageAreaPro>(context, listen: false)
-                .notifyListenerz();
-            break;
-          }
-        }
-      });
-    });
+    if (!mounted) {
+      return;
+    }
+
+    final areaId = Provider.of<ManageAreaPro>(context, listen: false).areaid;
+    while (mounted) {
+      final loaded = await MyServer.getWholeArea(areaId, context);
+      if (loaded) {
+        final provider = Provider.of<ManageAreaPro>(context, listen: false);
+        provider.isloaded = true;
+        provider.isdonable = provider.mytables.isNotEmpty;
+        provider.notifyListenerz();
+        break;
+      }
+    }
   }
-
-  // void loadAllAreas(BuildContext context) async {
-  //   while (true) {
-  //     var value = await MyServer.getEditAllAreas(context);
-  //     if (value) {
-  //       // Provider.of<EditAreasPro>(context, listen: false).reload = !Provider.of<AllAreasPro>(context, listen: false).reload;
-  //       Provider.of<EditAreasPro>(context, listen: false).isloaded = true;
-  //       Provider.of<EditAreasPro>(context, listen: false).notifyListenerz();
-  //       print("AYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaa");
-  //       break;
-  //     }
-  //   }
-  // }
-  // final verticalScrollController = ScrollController();
-  // final horizontalScrollController = ScrollController();
-  // final mykey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
-    print(
-        "BUILD WIDTH=====================-----------------------${RouteManager.width}");
-    print(
-        "BUILD Height=====================-----------------------${RouteManager.height}");
     return SafeArea(
       child: PopScope(
         onPopInvokedWithResult: (didPop, result) {
-          if (!didPop) {
-            return;
+          if (didPop) {
+            Provider.of<ManageAreaPro>(context, listen: false).clearAll();
           }
-          Provider.of<ManageAreaPro>(context, listen: false).clearAll();
         },
         child: Scaffold(
-          // appBar: AppBar(
-          //   title: Text(""),
-          // ),
-          body: Container(
-            padding: EdgeInsets.all(RouteManager.width / 150),
-            // width: RouteManager.width/1.1,
-            // height: RouteManager.height,
-            child: Row(
-              children: [
-                Container(
-                  width: RouteManager.width / 1.13,
-                  height: RouteManager.height / 1.1,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.black,
-                    ),
-                    color: const Color.fromARGB(255, 243, 216, 234),
-                  ),
-                  padding: EdgeInsets.all(RouteManager.height / 90),
-                  child: !Provider.of<ManageAreaPro>(context).isloaded
-                      ? const SizedBox()
-                      : DragTarget<String>(
-                          onWillAcceptWithDetails: (value) {
-                            print("AYA 1");
-                            return true;
-                          },
-                          onAcceptWithDetails: (data) async {
-                            // print("RouteManager.height/1.275=================================================="+(RouteManager.height/1.275).toString());
-                            print(
-                                "Length of STACK::::::::::::::::::::::::::::::::::::::::::::::::::::::${Provider.of<ManageAreaPro>(context, listen: false).tables.children.length}");
-                            print(
-                                "Length of MyTables:::::::::::::::::::::::::::::::::::::::::::::::::::${Provider.of<ManageAreaPro>(context, listen: false).mytables.length}");
+          backgroundColor: AppTheme.background,
+          body: Consumer<ManageAreaPro>(
+            builder: (context, provider, child) {
+              if (!provider.isloaded) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-                            if (data.offset.dy > RouteManager.height / 1.275) {
-                              return;
-                            }
-                            if (data.offset.dx > RouteManager.width / 1.23) {
-                              return;
-                            }
-                            // Provider.of<CreateAreaPro>(context, listen: false).accepted = true;
-                            // if(data.offset.dx>RouteManager.w)
-                            // Provider.of<CreateAreaPro>(context, listen: false).dx = data.offset.dx - (RouteManager.height / 40) < 0 ? 0 : data.offset.dx - (RouteManager.height / 40);
-                            // Provider.of<CreateAreaPro>(context, listen: false).dy = data.offset.dy - (RouteManager.height / 10) < 0 ? 0 : data.offset.dy - (RouteManager.height / 10);
-                            // int indextoremove = -1;
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final isCompact = constraints.maxWidth < 760;
+                  final editor = _FloorEditor(
+                    provider: provider,
+                    selectedIndex: _selectedIndex,
+                    onSelect: (index) => setState(() => _selectedIndex = index),
+                    onMove: _moveTable,
+                  );
+                  final tools = _EditorTools(
+                    areaName: provider.areaname,
+                    tableCount: provider.mytables.length,
+                    selectedIndex: _selectedIndex,
+                    shapes: _shapes,
+                    onAdd: _showAddTableDialog,
+                    onDelete: _deleteSelected,
+                    onSave: provider.isdonable ? _saveArea : null,
+                    onCancel: () => Navigator.of(context).maybePop(),
+                  );
 
-                            if (int.parse(data.data.split('-')[1]) !=
-                                Provider.of<ManageAreaPro>(context,
-                                        listen: false)
-                                    .tables
-                                    .children
-                                    .length) {
-                              print(
-                                  "DELETEDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD :::::: ${data.data.split('-')[1]}");
-                              Provider.of<ManageAreaPro>(context, listen: false)
-                                  .tables
-                                  .children
-                                  .removeAt(int.parse(data.data.split('-')[1]));
-                              Provider.of<ManageAreaPro>(context, listen: false)
-                                  .mytables
-                                  .add(Provider.of<ManageAreaPro>(context,
-                                              listen: false)
-                                          .mytables[
-                                      int.parse(data.data.split('-')[1])]);
+                  if (isCompact) {
+                    return Column(
+                      children: [
+                        Expanded(child: editor),
+                        SizedBox(height: 150, child: tools),
+                      ],
+                    );
+                  }
 
-                              Provider.of<ManageAreaPro>(context, listen: false)
-                                  .mytables[Provider.of<ManageAreaPro>(context,
-                                              listen: false)
-                                          .mytables
-                                          .length -
-                                      1]
-                                  .dx = data.offset.dx -
-                                          (RouteManager.height / 40) <
-                                      0
-                                  ? 0
-                                  : data.offset.dx - (RouteManager.height / 40);
-                              Provider.of<ManageAreaPro>(context, listen: false)
-                                  .mytables[Provider.of<ManageAreaPro>(context,
-                                              listen: false)
-                                          .mytables
-                                          .length -
-                                      1]
-                                  .dy = data.offset.dy -
-                                          (RouteManager.height / 10) <
-                                      0
-                                  ? 0
-                                  : data.offset.dy - (RouteManager.height / 10);
-                              Provider.of<ManageAreaPro>(context, listen: false)
-                                  .mytables
-                                  .removeAt(int.parse(data.data.split('-')[1]));
-
-                              // Provider.of<ManageAreaPro>(context, listen: false).mytables[int.parse(data.data.split('-')[1])].dx =
-                              //     data.offset.dx - (RouteManager.height / 40) < 0 ? 0 : data.offset.dx - (RouteManager.height / 40);
-                              // Provider.of<ManageAreaPro>(context, listen: false).mytables[int.parse(data.data.split('-')[1])].dy =
-                              //     data.offset.dy - (RouteManager.height / 10) < 0 ? 0 : data.offset.dy - (RouteManager.height / 10);
-                              // Provider.of<ManageAreaPro>(context, listen: false).mytables.removeAt(int.parse(data.data.split('-')[1]));
-                            } else {
-                              await showDialog(
-                                  barrierDismissible: false,
-                                  context: context,
-                                  builder: (cont) {
-                                    return PopScope(
-                                      canPop: false,
-                                      child: AlertDialog(
-                                        // title: const Text("New Table"),
-                                        content: SingleChildScrollView(
-                                          child: SizedBox(
-                                            width: RouteManager.width / 2.5,
-                                            // height: RouteManager.height / 2.2,
-                                            child: Column(children: [
-                                              TextField(
-                                                style: TextStyle(
-                                                  // fontWeight: FontWeight.bold,
-                                                  fontSize:
-                                                      RouteManager.width / 60,
-                                                ),
-                                                controller: tablename,
-                                                decoration: InputDecoration(
-                                                  fillColor: Colors.white,
-                                                  filled: true,
-                                                  // labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: RouteManager.width / 16),
-                                                  floatingLabelBehavior:
-                                                      FloatingLabelBehavior
-                                                          .auto,
-                                                  // labelText: "New Area",
-                                                  hintText: "Enter Table Name",
-                                                  hintStyle: TextStyle(
-                                                    // fontWeight: FontWeight.bold,
-                                                    fontSize:
-                                                        RouteManager.width / 60,
-                                                  ),
-                                                ),
-                                              ),
-                                              // SizedBox(height: RouteManager.width / 23),
-                                              ElevatedButton(
-                                                  onPressed: () {
-                                                    if (tablename.text != "") {
-                                                      for (int i = 0;
-                                                          i <
-                                                              Provider.of<ManageAreaPro>(
-                                                                      context,
-                                                                      listen:
-                                                                          false)
-                                                                  .mytables
-                                                                  .length;
-                                                          i++) {
-                                                        if (Provider.of<ManageAreaPro>(
-                                                                    context,
-                                                                    listen:
-                                                                        false)
-                                                                .mytables[i]
-                                                                .tablename ==
-                                                            tablename.text) {
-                                                          ft.Fluttertoast
-                                                              .showToast(
-                                                            msg:
-                                                                "${Provider.of<ManageAreaPro>(context, listen: false).mytables[i].tablename} already Exists",
-                                                            toastLength: ft
-                                                                .Toast
-                                                                .LENGTH_SHORT,
-                                                          );
-
-                                                          return;
-                                                        }
-                                                      }
-                                                      Provider.of<ManageAreaPro>(
-                                                              context,
-                                                              listen: false)
-                                                          .mytables
-                                                          .add(
-                                                            TableObject(
-                                                              0,
-                                                              Provider.of<ManageAreaPro>(
-                                                                      context,
-                                                                      listen:
-                                                                          false)
-                                                                  .areaid,
-                                                              tablename.text,
-                                                              null,
-                                                              // Provider.of<CreateAreaPro>(context, listen: false).dx = data.offset.dx - (RouteManager.height / 40) < 0 ? 0 : data.offset.dx - (RouteManager.height / 40);
-                                                              // Provider.of<CreateAreaPro>(context, listen: false).dy = data.offset.dy - (RouteManager.height / 10) < 0 ? 0 : data.offset.dy - (RouteManager.height / 10);
-                                                              data.offset.dx -
-                                                                          (RouteManager.height /
-                                                                              40) <
-                                                                      0
-                                                                  ? 0
-                                                                  : data.offset
-                                                                          .dx -
-                                                                      (RouteManager
-                                                                              .height /
-                                                                          40),
-                                                              data.offset.dy -
-                                                                          (RouteManager.height /
-                                                                              10) <
-                                                                      0
-                                                                  ? 0
-                                                                  : data.offset
-                                                                          .dy -
-                                                                      (RouteManager
-                                                                              .height /
-                                                                          10),
-                                                              data.data.split(
-                                                                  '-')[0],
-                                                            ),
-                                                          );
-                                                      Provider.of<ManageAreaPro>(
-                                                              context,
-                                                              listen: false)
-                                                          .isdonable = true;
-                                                      Provider.of<ManageAreaPro>(
-                                                              context,
-                                                              listen: false)
-                                                          .notifyListenerz();
-                                                      print(
-                                                          "TABLE ADDED STACK::::::::::::::::::::::::::::::::::::::::::::::::::::::${Provider.of<ManageAreaPro>(context, listen: false).tables.children.length}");
-                                                      print(
-                                                          "TABLE ADDED MyTables:::::::::::::::::::::::::::::::::::::::::::::::::::${Provider.of<ManageAreaPro>(context, listen: false).mytables.length}");
-                                                      // print("DX=======================================" + Provider.of<CreateAreaPro>(context, listen: false).dx.toString());
-                                                      // print("Dy=======================================" + Provider.of<CreateAreaPro>(context, listen: false).dy.toString());
-                                                      Navigator.of(context,
-                                                              rootNavigator:
-                                                                  true)
-                                                          .pop();
-                                                      print(
-                                                          "Length of MY TABLEs============================${Provider.of<ManageAreaPro>(context, listen: false).mytables.length}");
-                                                    }
-                                                  },
-                                                  child: Text(
-                                                    "Confirm",
-                                                    style: TextStyle(
-                                                        fontSize:
-                                                            RouteManager.width /
-                                                                60),
-                                                  ))
-                                            ]),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  });
-                            }
-                            // int indexofwidget = Provider.of<CreateAreaPro>(context, listen: false).tables.children.length;
-                            tablename.text = "";
-                            List<Widget> mywlist = [];
-                            // print("LIST:::::::"+Provider.of<ManageAreaPro>(context, listen: false).mytables.toString());
-                            for (int i = 0;
-                                i <
-                                    Provider.of<ManageAreaPro>(context,
-                                            listen: false)
-                                        .mytables
-                                        .length;
-                                i++) {
-                              print(
-                                  "SHAPE :::::::::::${Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape}");
-                              print(
-                                  "LENGTH :::::::::::${Provider.of<ManageAreaPro>(context, listen: false).mytables.length}");
-                              mywlist.add(
-                                Column(
-                                  children: [
-                                    Container(
-                                      height: Provider.of<ManageAreaPro>(
-                                              context,
-                                              listen: false)
-                                          .mytables[i]
-                                          .dy,
-                                    ),
-                                    Row(
-                                      children: [
-                                        Container(
-                                          width: Provider.of<ManageAreaPro>(
-                                                  context,
-                                                  listen: false)
-                                              .mytables[i]
-                                              .dx,
-                                        ),
-                                        InkWell(
-                                          onTap: () {
-                                            ft.Fluttertoast.showToast(
-                                              msg: Provider.of<ManageAreaPro>(
-                                                      context,
-                                                      listen: false)
-                                                  .mytables[i]
-                                                  .tablename,
-                                              toastLength:
-                                                  ft.Toast.LENGTH_SHORT,
-                                            );
-                                          },
-                                          child: Draggable<String>(
-                                            data:
-                                                "${Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape}-$i",
-
-                                            // onDragUpdate: (c) {
-                                            //   print("DRAG UPDATE DETAILS ::::::::::::::::" + c.toString());
-                                            // },
-                                            childWhenDragging: const SizedBox(),
-                                            feedback: SizedBox(
-                                              width: RouteManager.height / 5.5,
-                                              height: RouteManager.height / 5.5,
-                                              child: Stack(
-                                                children: [
-                                                  Container(
-                                                    width: RouteManager.height /
-                                                        5.5,
-                                                    height:
-                                                        RouteManager.height /
-                                                            5.5,
-                                                    decoration: BoxDecoration(
-                                                      // color: Colors.red,
-                                                      shape: Provider.of<ManageAreaPro>(
-                                                                      context,
-                                                                      listen:
-                                                                          false)
-                                                                  .mytables[i]
-                                                                  .shape ==
-                                                              "circle"
-                                                          ? BoxShape.circle
-                                                          : BoxShape.rectangle,
-                                                      image: Provider.of<ManageAreaPro>(
-                                                                      context,
-                                                                      listen:
-                                                                          false)
-                                                                  .mytables[i]
-                                                                  .shape ==
-                                                              "circle"
-                                                          ? const DecorationImage(
-                                                              image: AssetImage(
-                                                                  "images/circle.png"),
-                                                              fit: BoxFit.fill)
-                                                          : Provider.of<ManageAreaPro>(context, listen: false)
-                                                                      .mytables[
-                                                                          i]
-                                                                      .shape ==
-                                                                  "square"
-                                                              ? const DecorationImage(
-                                                                  image: AssetImage(
-                                                                      "images/square.png"),
-                                                                  fit: BoxFit
-                                                                      .fill)
-                                                              : Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape ==
-                                                                      "bed_beach"
-                                                                  ? const DecorationImage(
-                                                                      image: AssetImage("images/bed_beach.png"),
-                                                                      fit: BoxFit.fill)
-                                                                  : Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape == "table"
-                                                                      ? const DecorationImage(image: AssetImage("images/table.png"), fit: BoxFit.fill)
-                                                                      : Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape == "big_table"
-                                                                          ? const DecorationImage(image: AssetImage("images/big_table.png"), fit: BoxFit.fill)
-                                                                          : const DecorationImage(image: AssetImage("images/round_bed.png"), fit: BoxFit.fill),
-
-                                                      // borderRadius: BorderRadius.all(Radius.circular(20)),
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                    width: RouteManager.height /
-                                                        5.5,
-                                                    height:
-                                                        RouteManager.height /
-                                                            5.5,
-                                                    child: Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Container(
-                                                              constraints:
-                                                                  BoxConstraints(
-                                                                maxWidth:
-                                                                    RouteManager
-                                                                            .height /
-                                                                        5.511,
-                                                                maxHeight:
-                                                                    RouteManager
-                                                                            .height /
-                                                                        11.250,
-                                                              ),
-                                                              padding: EdgeInsets
-                                                                  .all(RouteManager
-                                                                          .height /
-                                                                      80),
-                                                              decoration:
-                                                                  const BoxDecoration(
-                                                                color: Color
-                                                                    .fromARGB(
-                                                                        255,
-                                                                        55,
-                                                                        253,
-                                                                        18),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .all(
-                                                                  Radius
-                                                                      .circular(
-                                                                          20),
-                                                                ),
-                                                              ),
-                                                              child: Row(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .center,
-                                                                children: [
-                                                                  Flexible(
-                                                                    child:
-                                                                        DefaultTextStyle(
-                                                                      style:
-                                                                          TextStyle(
-                                                                        fontSize:
-                                                                            RouteManager.height /
-                                                                                30,
-                                                                        color: Colors
-                                                                            .white,
-                                                                      ),
-                                                                      child:
-                                                                          Text(
-                                                                        Provider.of<ManageAreaPro>(context,
-                                                                                listen: false)
-                                                                            .mytables[i]
-                                                                            .tablename,
-                                                                        maxLines:
-                                                                            1,
-                                                                        overflow:
-                                                                            TextOverflow.ellipsis,
-                                                                        style:
-                                                                            TextStyle(
-                                                                          fontSize:
-                                                                              RouteManager.height / 30,
-                                                                          color:
-                                                                              Colors.white,
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            child: SizedBox(
-                                              width: RouteManager.height / 5.5,
-                                              height: RouteManager.height / 5.5,
-                                              child: Stack(
-                                                children: [
-                                                  Container(
-                                                    width: RouteManager.height /
-                                                        5.5,
-                                                    height:
-                                                        RouteManager.height /
-                                                            5.5,
-                                                    decoration: BoxDecoration(
-                                                      // color: Colors.red,
-                                                      shape: Provider.of<ManageAreaPro>(
-                                                                      context,
-                                                                      listen:
-                                                                          false)
-                                                                  .mytables[i]
-                                                                  .shape ==
-                                                              "circle"
-                                                          ? BoxShape.circle
-                                                          : BoxShape.rectangle,
-                                                      image: Provider.of<ManageAreaPro>(
-                                                                      context,
-                                                                      listen:
-                                                                          false)
-                                                                  .mytables[i]
-                                                                  .shape ==
-                                                              "circle"
-                                                          ? const DecorationImage(
-                                                              image: AssetImage(
-                                                                  "images/circle.png"),
-                                                              fit: BoxFit.fill)
-                                                          : Provider.of<ManageAreaPro>(context, listen: false)
-                                                                      .mytables[
-                                                                          i]
-                                                                      .shape ==
-                                                                  "square"
-                                                              ? const DecorationImage(
-                                                                  image: AssetImage(
-                                                                      "images/square.png"),
-                                                                  fit: BoxFit
-                                                                      .fill)
-                                                              : Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape ==
-                                                                      "bed_beach"
-                                                                  ? const DecorationImage(
-                                                                      image: AssetImage("images/bed_beach.png"),
-                                                                      fit: BoxFit.fill)
-                                                                  : Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape == "table"
-                                                                      ? const DecorationImage(image: AssetImage("images/table.png"), fit: BoxFit.fill)
-                                                                      : Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape == "big_table"
-                                                                          ? const DecorationImage(image: AssetImage("images/big_table.png"), fit: BoxFit.fill)
-                                                                          : const DecorationImage(image: AssetImage("images/round_bed.png"), fit: BoxFit.fill),
-
-                                                      // borderRadius: BorderRadius.all(Radius.circular(20)),
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                    width: RouteManager.height /
-                                                        5.5,
-                                                    height:
-                                                        RouteManager.height /
-                                                            5.5,
-                                                    child: Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Container(
-                                                              constraints: BoxConstraints(
-                                                                  maxWidth:
-                                                                      RouteManager
-                                                                              .height /
-                                                                          5.511),
-                                                              padding: EdgeInsets
-                                                                  .all(RouteManager
-                                                                          .height /
-                                                                      80),
-                                                              decoration:
-                                                                  const BoxDecoration(
-                                                                color: Color
-                                                                    .fromARGB(
-                                                                        255,
-                                                                        55,
-                                                                        253,
-                                                                        18),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .all(
-                                                                  Radius
-                                                                      .circular(
-                                                                          20),
-                                                                ),
-                                                              ),
-                                                              child: Row(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .center,
-                                                                children: [
-                                                                  Flexible(
-                                                                    child:
-                                                                        DefaultTextStyle(
-                                                                      style:
-                                                                          TextStyle(
-                                                                        fontSize:
-                                                                            RouteManager.height /
-                                                                                30,
-                                                                        color: Colors
-                                                                            .white,
-                                                                      ),
-                                                                      child:
-                                                                          Text(
-                                                                        Provider.of<ManageAreaPro>(context,
-                                                                                listen: false)
-                                                                            .mytables[i]
-                                                                            .tablename,
-                                                                        maxLines:
-                                                                            1,
-                                                                        overflow:
-                                                                            TextOverflow.ellipsis,
-                                                                        style:
-                                                                            TextStyle(
-                                                                          fontSize:
-                                                                              RouteManager.height / 30,
-                                                                          color:
-                                                                              Colors.white,
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              );
-                              print("ADDED TO MYWLIST----------------$i");
-                            }
-                            Provider.of<ManageAreaPro>(context, listen: false)
-                                .tables = Stack(children: mywlist);
-                            print(
-                                "Length of STACK::::::::::::::::::::::::::::::::::::::::::::::::::::::${Provider.of<ManageAreaPro>(context, listen: false).tables.children.length}");
-                            print(
-                                "Length of MyTables:::::::::::::::::::::::::::::::::::::::::::::::::::${Provider.of<ManageAreaPro>(context, listen: false).mytables.length}");
-                            print("ONACCEPTWITHDETAILS DATA::::${data.data}");
-                            // print("RouteManager.width/1.23==================================================" + (RouteManager.height / 1.23).toString());
-                            // print("DX DY :::::::::::::::::::::::::::::::::::::::::::::::::        " + data.offset.dx.toString() + "  :  " + data.offset.dy.toString());
-                            Provider.of<ManageAreaPro>(context, listen: false)
-                                .notifyListenerz();
-                            setState(() {});
-                            print("AYA 3");
-
-                            // Provider.of<CreateAreaPro>(context, listen: false).tables = Stack(
-                            //   children: [
-                            //     ...Provider.of<CreateAreaPro>(context, listen: false).tables.children,
-                            //     Column(
-                            //       children: [
-                            //         SizedBox(
-                            //           height: data.offset.dy - (RouteManager.height / 10) < 0 ? 0 : data.offset.dy - (RouteManager.height / 10),
-                            //         ),
-                            //         Row(
-                            //           children: [
-                            //             SizedBox(
-                            //               width: data.offset.dx - (RouteManager.height / 40) < 0 ? 0 : data.offset.dx - (RouteManager.height / 40),
-                            //             ),
-                            //             Draggable<String>(
-                            //               data: data.data.split('-')[0] + "-" + indexofwidget.toString(),
-                            //               child: Container(
-                            //                 width: RouteManager.height / 5.5,
-                            //                 height: RouteManager.height / 5.5,
-                            //                 decoration: BoxDecoration(
-                            //                   // color: Colors.red,
-                            //                   shape: data.data.split('-')[0] == "circle" ? BoxShape.circle : BoxShape.rectangle,
-                            //                   image: DecorationImage(image: AssetImage("images/wood.jpg"), fit: BoxFit.fill),
-                            //                   // borderRadius: BorderRadius.all(Radius.circular(20)),
-                            //                 ),
-                            //               ),
-                            //               // onDragUpdate: (c) {
-                            //               //   print("DRAG UPDATE DETTAILS ::::::::::::::::" + c.toString());
-                            //               // },
-                            //               childWhenDragging: SizedBox(),
-                            //               feedback: Container(
-                            //                 // key: mykey,
-                            //                 width: RouteManager.height / 5.5,
-                            //                 height: RouteManager.height / 5.5,
-                            //                 decoration: BoxDecoration(
-                            //                   shape: data.data.split('-')[0] == "circle" ? BoxShape.circle : BoxShape.rectangle,
-                            //                   image: DecorationImage(image: AssetImage("images/wood.jpg"), fit: BoxFit.fill),
-                            //                   // borderRadius: BorderRadius.all(Radius.circular(20)),
-                            //                 ),
-                            //               ),
-                            //             ),
-                            //           ],
-                            //         ),
-                            //       ],
-                            //     ),
-                            //   ],
-                            // );
-                          },
-                          builder: (context, candidates, rejects) {
-                            print("CANDIDATES : $candidates");
-                            print("REJECTS : $rejects");
-                            // print("AYA 4");
-                            return Provider.of<ManageAreaPro>(context,
-                                    listen: false)
-                                .tables;
-                          },
-                        ),
-                ),
-                SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                  return Row(
                     children: [
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red),
-                        onPressed: () {
-                          Navigator.of(context, rootNavigator: true).pop();
-                        },
-                        child: Text(
-                          "Cancel",
-                          style: TextStyle(fontSize: RouteManager.height / 33),
-                        ),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green),
-                        onPressed: Provider.of<ManageAreaPro>(context).isdonable
-                            ? () {
-                                MyServer.addTablesInArea(
-                                        Provider.of<ManageAreaPro>(context,
-                                                listen: false)
-                                            .areaid,
-                                        Provider.of<ManageAreaPro>(context,
-                                                listen: false)
-                                            .mytables)
-                                    .then((value) {
-                                  // Provider.of<HomePro>(context, listen: false).totalareas = Provider.of<HomePro>(context, listen: false).totalareas! + 1;
-                                  // Provider.of<HomePro>(context, listen: false).notifyListenerz();
-                                  // ft.Fluttertoast.showToast(
-                                  //   msg: "Area '" + areaname.text + "' Added",
-                                  //   toastLength: ft.Toast.LENGTH_SHORT,
-                                  // );
-                                  print(
-                                      "AALAWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
-                                });
-                                // Navigator.of(context, rootNavigator: true).pop();
-                                Navigator.of(context, rootNavigator: true)
-                                    .pop();
-                                print(
-                                    "Length of MYTABLEs============================${Provider.of<ManageAreaPro>(context, listen: false).mytables.length}");
-                              }
-                            : null,
-                        child: Text(
-                          "Done",
-                          style: TextStyle(fontSize: RouteManager.height / 25),
-                        ),
-                      ),
-                      Container(
-                        width: RouteManager.height / 6.77,
-                        height: RouteManager.height / 6.77,
-                        padding: EdgeInsets.all(RouteManager.height / 300),
-                        decoration: const BoxDecoration(
-                          color: Color.fromARGB(255, 219, 216, 216),
-                          shape: BoxShape.circle,
-                          // image: DecorationImage(image: AssetImage("images/wood.jpg"), fit: BoxFit.fill),
-                          // borderRadius: BorderRadius.all(Radius.circular(20)),
-                        ),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Icon(
-                              Icons.delete_forever,
-                              color: Colors.red,
-                              size: RouteManager.height / 12,
-                            ),
-                            DragTarget(
-                              onWillAcceptWithDetails: (data) => true,
-                              onAcceptWithDetails: (data) {
-                                if (int.parse(
-                                        data.data.toString().split('-')[1]) ==
-                                    Provider.of<ManageAreaPro>(context,
-                                            listen: false)
-                                        .mytables
-                                        .length) {
-                                  return;
-                                }
-                                if (Provider.of<ManageAreaPro>(context,
-                                            listen: false)
-                                        .mytables[int.parse(
-                                            data.data.toString().split('-')[1])]
-                                        .booking !=
-                                    null) {
-                                  ft.Fluttertoast.showToast(
-                                    msg: "Table has Bookings",
-                                    toastLength: ft.Toast.LENGTH_SHORT,
-                                  );
-                                  return;
-                                }
-                                Provider.of<ManageAreaPro>(context,
-                                        listen: false)
-                                    .mytables
-                                    .removeAt(int.parse(
-                                        data.data.toString().split('-')[1]));
-                                List<Widget> mywlist = [];
-                                for (int i = 0;
-                                    i <
-                                        Provider.of<ManageAreaPro>(context,
-                                                listen: false)
-                                            .mytables
-                                            .length;
-                                    i++) {
-                                  mywlist.add(
-                                    Column(
-                                      children: [
-                                        SizedBox(
-                                          height: Provider.of<ManageAreaPro>(
-                                                  context,
-                                                  listen: false)
-                                              .mytables[i]
-                                              .dy,
-                                        ),
-                                        Row(
-                                          children: [
-                                            SizedBox(
-                                              width: Provider.of<ManageAreaPro>(
-                                                      context,
-                                                      listen: false)
-                                                  .mytables[i]
-                                                  .dx,
-                                            ),
-                                            InkWell(
-                                              onTap: () {
-                                                ft.Fluttertoast.showToast(
-                                                  msg: Provider.of<
-                                                              ManageAreaPro>(
-                                                          context,
-                                                          listen: false)
-                                                      .mytables[i]
-                                                      .tablename,
-                                                  toastLength:
-                                                      ft.Toast.LENGTH_SHORT,
-                                                );
-                                              },
-                                              child: Draggable<String>(
-                                                data:
-                                                    "${Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape}-$i",
-
-                                                // onDragUpdate: (c) {
-                                                //   print("DRAG UPDATE DETTAILS ::::::::::::::::" + c.toString());
-                                                // },
-                                                childWhenDragging:
-                                                    const SizedBox(),
-                                                feedback: SizedBox(
-                                                  width:
-                                                      RouteManager.height / 5.5,
-                                                  height:
-                                                      RouteManager.height / 5.5,
-                                                  child: Stack(
-                                                    children: [
-                                                      Container(
-                                                        width: RouteManager
-                                                                .height /
-                                                            5.5,
-                                                        height: RouteManager
-                                                                .height /
-                                                            5.5,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          // color: Colors.red,
-                                                          shape: Provider.of<ManageAreaPro>(
-                                                                          context,
-                                                                          listen:
-                                                                              false)
-                                                                      .mytables[
-                                                                          i]
-                                                                      .shape ==
-                                                                  "circle"
-                                                              ? BoxShape.circle
-                                                              : BoxShape
-                                                                  .rectangle,
-                                                          image: Provider.of<ManageAreaPro>(
-                                                                          context,
-                                                                          listen:
-                                                                              false)
-                                                                      .mytables[
-                                                                          i]
-                                                                      .shape ==
-                                                                  "circle"
-                                                              ? const DecorationImage(
-                                                                  image: AssetImage(
-                                                                      "images/circle.png"),
-                                                                  fit: BoxFit
-                                                                      .fill)
-                                                              : Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape ==
-                                                                      "square"
-                                                                  ? const DecorationImage(
-                                                                      image: AssetImage(
-                                                                          "images/square.png"),
-                                                                      fit: BoxFit
-                                                                          .fill)
-                                                                  : Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape ==
-                                                                          "bed_beach"
-                                                                      ? const DecorationImage(
-                                                                          image:
-                                                                              AssetImage("images/bed_beach.png"),
-                                                                          fit: BoxFit.fill)
-                                                                      : Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape == "table"
-                                                                          ? const DecorationImage(image: AssetImage("images/table.png"), fit: BoxFit.fill)
-                                                                          : Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape == "big_table"
-                                                                              ? const DecorationImage(image: AssetImage("images/big_table.png"), fit: BoxFit.fill)
-                                                                              : const DecorationImage(image: AssetImage("images/round_bed.png"), fit: BoxFit.fill),
-
-                                                          // borderRadius: BorderRadius.all(Radius.circular(20)),
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        width: RouteManager
-                                                                .height /
-                                                            5.5,
-                                                        height: RouteManager
-                                                                .height /
-                                                            5.5,
-                                                        child: Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .center,
-                                                              children: [
-                                                                Container(
-                                                                  constraints:
-                                                                      BoxConstraints(
-                                                                    maxWidth:
-                                                                        RouteManager.height /
-                                                                            5.511,
-                                                                    maxHeight:
-                                                                        RouteManager.height /
-                                                                            11.250,
-                                                                  ),
-                                                                  padding: EdgeInsets.all(
-                                                                      RouteManager
-                                                                              .height /
-                                                                          80),
-                                                                  decoration:
-                                                                      const BoxDecoration(
-                                                                    color: Color
-                                                                        .fromARGB(
-                                                                            255,
-                                                                            55,
-                                                                            253,
-                                                                            18),
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .all(
-                                                                      Radius.circular(
-                                                                          20),
-                                                                    ),
-                                                                  ),
-                                                                  child: Row(
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .center,
-                                                                    children: [
-                                                                      Flexible(
-                                                                        child:
-                                                                            DefaultTextStyle(
-                                                                          style:
-                                                                              TextStyle(
-                                                                            fontSize:
-                                                                                RouteManager.height / 30,
-                                                                            color:
-                                                                                Colors.white,
-                                                                          ),
-                                                                          child:
-                                                                              SizedBox(
-                                                                            child:
-                                                                                Text(
-                                                                              Provider.of<ManageAreaPro>(context, listen: false).mytables[i].tablename,
-                                                                              maxLines: 1,
-                                                                              overflow: TextOverflow.ellipsis,
-                                                                              style: TextStyle(
-                                                                                fontSize: RouteManager.height / 30,
-                                                                                color: Colors.white,
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                child: SizedBox(
-                                                  width:
-                                                      RouteManager.height / 5.5,
-                                                  height:
-                                                      RouteManager.height / 5.5,
-                                                  child: Stack(
-                                                    children: [
-                                                      Container(
-                                                        width: RouteManager
-                                                                .height /
-                                                            5.5,
-                                                        height: RouteManager
-                                                                .height /
-                                                            5.5,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          // color: Colors.red,
-                                                          image: Provider.of<ManageAreaPro>(
-                                                                          context,
-                                                                          listen:
-                                                                              false)
-                                                                      .mytables[
-                                                                          i]
-                                                                      .shape ==
-                                                                  "circle"
-                                                              ? const DecorationImage(
-                                                                  image: AssetImage(
-                                                                      "images/circle.png"),
-                                                                  fit: BoxFit
-                                                                      .fill)
-                                                              : Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape ==
-                                                                      "square"
-                                                                  ? const DecorationImage(
-                                                                      image: AssetImage(
-                                                                          "images/square.png"),
-                                                                      fit: BoxFit
-                                                                          .fill)
-                                                                  : Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape ==
-                                                                          "bed_beach"
-                                                                      ? const DecorationImage(
-                                                                          image:
-                                                                              AssetImage("images/bed_beach.png"),
-                                                                          fit: BoxFit.fill)
-                                                                      : Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape == "table"
-                                                                          ? const DecorationImage(image: AssetImage("images/table.png"), fit: BoxFit.fill)
-                                                                          : Provider.of<ManageAreaPro>(context, listen: false).mytables[i].shape == "big_table"
-                                                                              ? const DecorationImage(image: AssetImage("images/big_table.png"), fit: BoxFit.fill)
-                                                                              : const DecorationImage(image: AssetImage("images/round_bed.png"), fit: BoxFit.fill),
-                                                          //borderRadius: BorderRadius.all(Radius.circular(20)),
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        width: RouteManager
-                                                                .height /
-                                                            5.5,
-                                                        height: RouteManager
-                                                                .height /
-                                                            5.5,
-                                                        child: Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .center,
-                                                              children: [
-                                                                Container(
-                                                                  constraints: BoxConstraints(
-                                                                      maxWidth:
-                                                                          RouteManager.height /
-                                                                              5.511),
-                                                                  padding: EdgeInsets.all(
-                                                                      RouteManager
-                                                                              .height /
-                                                                          80),
-                                                                  decoration:
-                                                                      const BoxDecoration(
-                                                                    color: Color
-                                                                        .fromARGB(
-                                                                            255,
-                                                                            55,
-                                                                            253,
-                                                                            18),
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .all(
-                                                                      Radius.circular(
-                                                                          20),
-                                                                    ),
-                                                                  ),
-                                                                  child: Row(
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .center,
-                                                                    children: [
-                                                                      Flexible(
-                                                                        child:
-                                                                            DefaultTextStyle(
-                                                                          style:
-                                                                              TextStyle(
-                                                                            fontSize:
-                                                                                RouteManager.height / 30,
-                                                                            color:
-                                                                                Colors.white,
-                                                                          ),
-                                                                          child:
-                                                                              Text(
-                                                                            Provider.of<ManageAreaPro>(context, listen: false).mytables[i].tablename,
-                                                                            maxLines:
-                                                                                1,
-                                                                            overflow:
-                                                                                TextOverflow.ellipsis,
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize: RouteManager.height / 30,
-                                                                              color: Colors.white,
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                  print("ADDED TO MYWLIST----------------$i");
-                                }
-                                Provider.of<ManageAreaPro>(context,
-                                        listen: false)
-                                    .tables = Stack(children: mywlist);
-                                setState(() {});
-                                print(
-                                    "DATA HERE IS ::::::::::::::::::::${data.data}");
-                              },
-                              builder: (a, b, c) {
-                                return const SizedBox();
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(width: RouteManager.height / 90),
-                          Draggable<String>(
-                            data:
-                                "table-${Provider.of<ManageAreaPro>(context).tables.children.length}",
-                            childWhenDragging: Container(
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.brown),
-                                // image: DecorationImage(image: AssetImage("images/wood.jpg"), fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                            ),
-                            feedback: Container(
-                              // key: mykey,
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                    image: AssetImage("images/table.png"),
-                                    fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                            ),
-                            onDragStarted: () {
-                              // Provider.of<CreateAreaPro>(context, listen: false).tableslength = Provider.of<CreateAreaPro>(context, listen: false).tables.children.length;
-                            },
-                            onDragCompleted: () {
-                              // if (Provider.of<CreateAreaPro>(context, listen: false).tableslength == Provider.of<CreateAreaPro>(context, listen: false).tables.children.length) {
-                              //   return;
-                              // }
-
-                              print("COMPLETED");
-                            },
-                            onDragEnd: (DraggableDetails c) {
-                              // cc.offset
-                              print("ENDEDDDD: ${c.offset}");
-                            },
-                            onDraggableCanceled: (v, o) {
-                              print("CANCELEDDDDDDDD:$v:$o");
-                            },
-                            child: Container(
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                    image: AssetImage("images/table.png"),
-                                    fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                              // child:Image.asset("images/circle.png"),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(width: RouteManager.height / 90),
-                          Draggable<String>(
-                            data:
-                                "big_table-${Provider.of<ManageAreaPro>(context).tables.children.length}",
-                            childWhenDragging: Container(
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.brown),
-                                // image: DecorationImage(image: AssetImage("images/wood.jpg"), fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                            ),
-                            feedback: Container(
-                              // key: mykey,
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                    image: AssetImage("images/big_table.png"),
-                                    fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                            ),
-                            onDragStarted: () {
-                              // Provider.of<CreateAreaPro>(context, listen: false).tableslength = Provider.of<CreateAreaPro>(context, listen: false).tables.children.length;
-                            },
-                            onDragCompleted: () {
-                              // if (Provider.of<CreateAreaPro>(context, listen: false).tableslength == Provider.of<CreateAreaPro>(context, listen: false).tables.children.length) {
-                              //   return;
-                              // }
-
-                              print("COMPLETED");
-                            },
-                            onDragEnd: (DraggableDetails c) {
-                              // cc.offset
-                              print("ENDEDDDD: ${c.offset}");
-                            },
-                            onDraggableCanceled: (v, o) {
-                              print("CANCELEDDDDDDDD:$v:$o");
-                            },
-                            child: Container(
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                    image: AssetImage("images/big_table.png"),
-                                    fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                              // child:Image.asset("images/circle.png"),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(width: RouteManager.height / 90),
-                          Draggable<String>(
-                            data:
-                                "bed_beach-${Provider.of<ManageAreaPro>(context).tables.children.length}",
-                            childWhenDragging: Container(
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.brown),
-                                // image: DecorationImage(image: AssetImage("images/wood.jpg"), fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                            ),
-                            feedback: Container(
-                              // key: mykey,
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                    image: AssetImage("images/bed_beach.png"),
-                                    fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                            ),
-                            onDragStarted: () {
-                              // Provider.of<CreateAreaPro>(context, listen: false).tableslength = Provider.of<CreateAreaPro>(context, listen: false).tables.children.length;
-                            },
-                            onDragCompleted: () {
-                              // if (Provider.of<CreateAreaPro>(context, listen: false).tableslength == Provider.of<CreateAreaPro>(context, listen: false).tables.children.length) {
-                              //   return;
-                              // }
-
-                              print("COMPLETED");
-                            },
-                            onDragEnd: (DraggableDetails c) {
-                              // cc.offset
-                              print("ENDEDDDD: ${c.offset}");
-                            },
-                            onDraggableCanceled: (v, o) {
-                              print("CANCELEDDDDDDDD:$v:$o");
-                            },
-                            child: Container(
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                    image: AssetImage("images/bed_beach.png"),
-                                    fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                              // child:Image.asset("images/circle.png"),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(width: RouteManager.height / 90),
-                          Draggable<String>(
-                            data:
-                                "round_bed-${Provider.of<ManageAreaPro>(context).tables.children.length}",
-                            childWhenDragging: Container(
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.brown),
-                                // image: DecorationImage(image: AssetImage("images/wood.jpg"), fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                            ),
-                            feedback: Container(
-                              // key: mykey,
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                    image: AssetImage("images/round_bed.png"),
-                                    fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                            ),
-                            onDragStarted: () {
-                              // Provider.of<CreateAreaPro>(context, listen: false).tableslength = Provider.of<CreateAreaPro>(context, listen: false).tables.children.length;
-                            },
-                            onDragCompleted: () {
-                              // if (Provider.of<CreateAreaPro>(context, listen: false).tableslength == Provider.of<CreateAreaPro>(context, listen: false).tables.children.length) {
-                              //   return;
-                              // }
-
-                              print("COMPLETED");
-                            },
-                            onDragEnd: (DraggableDetails c) {
-                              // cc.offset
-                              print("ENDEDDDD: ${c.offset}");
-                            },
-                            onDraggableCanceled: (v, o) {
-                              print("CANCELEDDDDDDDD:$v:$o");
-                            },
-                            child: Container(
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                    image: AssetImage("images/round_bed.png"),
-                                    fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                              // child:Image.asset("images/circle.png"),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(width: RouteManager.height / 90),
-                          Draggable<String>(
-                            data:
-                                "circle-${Provider.of<ManageAreaPro>(context).tables.children.length}",
-                            childWhenDragging: Container(
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.brown),
-                                // image: DecorationImage(image: AssetImage("images/wood.jpg"), fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                            ),
-                            feedback: Container(
-                              // key: mykey,
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                    image: AssetImage("images/circle.png"),
-                                    fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                            ),
-                            onDragStarted: () {
-                              // Provider.of<CreateAreaPro>(context, listen: false).tableslength = Provider.of<CreateAreaPro>(context, listen: false).tables.children.length;
-                            },
-                            onDragCompleted: () {
-                              // if (Provider.of<CreateAreaPro>(context, listen: false).tableslength == Provider.of<CreateAreaPro>(context, listen: false).tables.children.length) {
-                              //   return;
-                              // }
-
-                              print("COMPLETED");
-                            },
-                            onDragEnd: (DraggableDetails c) {
-                              // cc.offset
-                              print("ENDEDDDD: ${c.offset}");
-                            },
-                            onDraggableCanceled: (v, o) {
-                              print("CANCELEDDDDDDDD:$v:$o");
-                            },
-                            child: Container(
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                    image: AssetImage("images/circle.png"),
-                                    fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                              // child:Image.asset("images/circle.png"),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: RouteManager.height / 33,
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(width: RouteManager.height / 90),
-                          Draggable(
-                            data:
-                                "square-${Provider.of<ManageAreaPro>(context).tables.children.length}",
-                            feedback: Container(
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: const BoxDecoration(
-                                // shape: BoxShape.circle,
-                                image: DecorationImage(
-                                    image: AssetImage("images/square.png"),
-                                    fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                            ),
-                            childWhenDragging: Container(
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.brown),
-                                // shape: BoxShape.circle,
-                                // image: DecorationImage(image: AssetImage("images/wood.jpg"), fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                            ),
-                            onDragStarted: () {
-                              // Provider.of<CreateAreaPro>(context, listen: false).tableslength = Provider.of<CreateAreaPro>(context, listen: false).tables.children.length;
-                            },
-                            onDragCompleted: () {
-                              // if (Provider.of<CreateAreaPro>(context, listen: false).tableslength == Provider.of<CreateAreaPro>(context, listen: false).tables.children.length) {
-                              //   return;
-                              // }
-                              print("COMPLETED");
-                            },
-                            onDragEnd: (DraggableDetails c) {
-                              // cc.offset
-                              print("ENDEDDDD: ${c.offset}");
-                            },
-                            onDraggableCanceled: (v, o) {
-                              print("CANCELEDDDDDDDD:$v:$o");
-                            },
-                            child: Container(
-                              width: RouteManager.height / 5.5,
-                              height: RouteManager.height / 5.5,
-                              decoration: const BoxDecoration(
-                                // shape: BoxShape.circle,
-                                image: DecorationImage(
-                                    image: AssetImage("images/square.png"),
-                                    fit: BoxFit.fill),
-                                // borderRadius: BorderRadius.all(Radius.circular(20)),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      Expanded(child: editor),
+                      SizedBox(width: 260, child: tools),
                     ],
-                  ),
-                )
-              ],
-            ),
+                  );
+                },
+              );
+            },
           ),
         ),
       ),
     );
   }
+
+  void _moveTable(int index, Offset delta, Size canvasSize) {
+    final provider = Provider.of<ManageAreaPro>(context, listen: false);
+    final table = provider.mytables[index];
+    const itemSize = 86.0;
+
+    table.dx = (table.dx + delta.dx).clamp(8.0, canvasSize.width - itemSize);
+    table.dy = (table.dy + delta.dy).clamp(8.0, canvasSize.height - itemSize);
+    provider.isdonable = true;
+    provider.notifyListenerz();
+  }
+
+  Future<void> _showAddTableDialog(_TableShape shape) async {
+    final controller = TextEditingController();
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text("Add ${shape.label}"),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            textInputAction: TextInputAction.done,
+            decoration: const InputDecoration(hintText: "Table name"),
+            onSubmitted: (_) => _addTable(dialogContext, controller, shape),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () => _addTable(dialogContext, controller, shape),
+              child: const Text("Add"),
+            ),
+          ],
+        );
+      },
+    );
+    controller.dispose();
+  }
+
+  void _addTable(
+    BuildContext dialogContext,
+    TextEditingController controller,
+    _TableShape shape,
+  ) {
+    final name = controller.text.trim();
+    if (name.isEmpty) {
+      ft.Fluttertoast.showToast(
+        msg: "Please enter table name",
+        toastLength: ft.Toast.LENGTH_SHORT,
+      );
+      return;
+    }
+
+    final provider = Provider.of<ManageAreaPro>(context, listen: false);
+    final exists = provider.mytables.any(
+      (table) => table.tablename.toLowerCase() == name.toLowerCase(),
+    );
+    if (exists) {
+      ft.Fluttertoast.showToast(
+        msg: "Table already exists",
+        toastLength: ft.Toast.LENGTH_SHORT,
+      );
+      return;
+    }
+
+    provider.mytables.add(
+      TableObject(
+        0,
+        provider.areaid,
+        name,
+        null,
+        40 + provider.mytables.length * 12,
+        40 + provider.mytables.length * 12,
+        shape.id,
+      ),
+    );
+    provider.isdonable = true;
+    provider.notifyListenerz();
+    setState(() => _selectedIndex = provider.mytables.length - 1);
+    Navigator.of(dialogContext).pop();
+  }
+
+  void _deleteSelected() {
+    final index = _selectedIndex;
+    if (index == null) {
+      ft.Fluttertoast.showToast(
+        msg: "Select a table first",
+        toastLength: ft.Toast.LENGTH_SHORT,
+      );
+      return;
+    }
+
+    final provider = Provider.of<ManageAreaPro>(context, listen: false);
+    if (index < 0 || index >= provider.mytables.length) {
+      setState(() => _selectedIndex = null);
+      return;
+    }
+
+    if (provider.mytables[index].booking != null) {
+      ft.Fluttertoast.showToast(
+        msg: "This table has bookings",
+        toastLength: ft.Toast.LENGTH_SHORT,
+      );
+      return;
+    }
+
+    provider.mytables.removeAt(index);
+    provider.isdonable = true;
+    provider.notifyListenerz();
+    setState(() => _selectedIndex = null);
+  }
+
+  Future<void> _saveArea() async {
+    final provider = Provider.of<ManageAreaPro>(context, listen: false);
+    final saved =
+        await MyServer.addTablesInArea(provider.areaid, provider.mytables);
+    if (!mounted) {
+      return;
+    }
+
+    ft.Fluttertoast.showToast(
+      msg: saved ? "Layout saved" : "Could not save layout",
+      toastLength: ft.Toast.LENGTH_SHORT,
+    );
+
+    if (saved) {
+      provider.clearAll();
+      Navigator.of(context).maybePop();
+    }
+  }
+}
+
+class _FloorEditor extends StatelessWidget {
+  const _FloorEditor({
+    required this.provider,
+    required this.selectedIndex,
+    required this.onSelect,
+    required this.onMove,
+  });
+
+  final ManageAreaPro provider;
+  final int? selectedIndex;
+  final ValueChanged<int> onSelect;
+  final void Function(int index, Offset delta, Size canvasSize) onMove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      provider.areaname,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    Text(
+                      "Drag tables to arrange the floor plan",
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(color: AppTheme.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Chip(
+                avatar: const Icon(Icons.table_restaurant, size: 18),
+                label: Text("${provider.mytables.length} tables"),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final canvasSize = Size(
+                  constraints.maxWidth,
+                  constraints.maxHeight,
+                );
+
+                return DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AppTheme.floorSurface,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppTheme.border),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x16000000),
+                        blurRadius: 18,
+                        offset: Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: CustomPaint(painter: _FloorGridPainter()),
+                        ),
+                        if (provider.mytables.isEmpty)
+                          const Center(
+                            child: _CanvasEmptyMessage(),
+                          ),
+                        for (int i = 0; i < provider.mytables.length; i++)
+                          Positioned(
+                            left: provider.mytables[i].dx
+                                .clamp(8.0, canvasSize.width - 86),
+                            top: provider.mytables[i].dy
+                                .clamp(8.0, canvasSize.height - 86),
+                            child: GestureDetector(
+                              onTap: () => onSelect(i),
+                              onPanStart: (_) => onSelect(i),
+                              onPanUpdate: (details) {
+                                onMove(i, details.delta, canvasSize);
+                              },
+                              child: _FloorTable(
+                                table: provider.mytables[i],
+                                selected: selectedIndex == i,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EditorTools extends StatelessWidget {
+  const _EditorTools({
+    required this.areaName,
+    required this.tableCount,
+    required this.selectedIndex,
+    required this.shapes,
+    required this.onAdd,
+    required this.onDelete,
+    required this.onSave,
+    required this.onCancel,
+  });
+
+  final String areaName;
+  final int tableCount;
+  final int? selectedIndex;
+  final List<_TableShape> shapes;
+  final ValueChanged<_TableShape> onAdd;
+  final VoidCallback onDelete;
+  final VoidCallback? onSave;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(0, 14, 14, 14),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text("Furniture", style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text(
+            "Tap an item to add it to the layout.",
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: AppTheme.textSecondary),
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: GridView.builder(
+              itemCount: shapes.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: 1.05,
+              ),
+              itemBuilder: (context, index) {
+                final shape = shapes[index];
+                return _ShapeButton(
+                  shape: shape,
+                  onTap: () => onAdd(shape),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: selectedIndex == null ? null : onDelete,
+            icon: const Icon(Icons.delete_outline),
+            label: const Text("Delete selected"),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: onCancel,
+                  child: const Text("Cancel"),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: onSave,
+                  child: const Text("Done"),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ShapeButton extends StatelessWidget {
+  const _ShapeButton({required this.shape, required this.onTap});
+
+  final _TableShape shape;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppTheme.background,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Image.asset(shape.asset, fit: BoxFit.contain),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                shape.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FloorTable extends StatelessWidget {
+  const _FloorTable({required this.table, required this.selected});
+
+  final TableObject table;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final shape = _ManageAreaState._shapes.firstWhere(
+      (item) => item.id == table.shape,
+      orElse: () => _ManageAreaState._shapes.first,
+    );
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 140),
+      width: 86,
+      height: 86,
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color:
+            selected ? AppTheme.primary.withValues(alpha: 0.12) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: selected ? AppTheme.primary : Colors.transparent,
+          width: 2,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x18000000),
+            blurRadius: 12,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Expanded(child: Image.asset(shape.asset, fit: BoxFit.contain)),
+          const SizedBox(height: 4),
+          Text(
+            table.tablename,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CanvasEmptyMessage extends StatelessWidget {
+  const _CanvasEmptyMessage();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.add_circle_outline, color: AppTheme.primary),
+            const SizedBox(width: 10),
+            Text(
+              "Add furniture from the panel",
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FloorGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.18)
+      ..strokeWidth = 1;
+    const step = 32.0;
+
+    for (double x = step; x < size.width; x += step) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    for (double y = step; y < size.height; y += step) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _TableShape {
+  const _TableShape(this.id, this.label, this.asset);
+
+  final String id;
+  final String label;
+  final String asset;
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:table_booking/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:fluttertoast/fluttertoast.dart' as ft;
 import 'package:table_booking/Entities/areaobject.dart';
@@ -53,14 +54,10 @@ class _SearchState extends State<Search> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: const Color.fromARGB(255, 55, 253, 18),
-          title: Row(
-            children: [
-              SizedBox(width: RouteManager.width / 4.5),
-              Text("Search",
-                  style: TextStyle(fontSize: RouteManager.width / 17)),
-            ],
-          ),
+          backgroundColor: AppTheme.primary,
+          centerTitle: true,
+          title: Text("Search",
+              style: TextStyle(fontSize: RouteManager.width / 17)),
         ),
         body: PopScope(
           onPopInvokedWithResult: (didPop, result) {
@@ -73,7 +70,7 @@ class _SearchState extends State<Search> {
           child: Provider.of<SearchPro>(context).loaded1 == null
               ? const Center(
                   child: CircularProgressIndicator(
-                    color: Color.fromARGB(255, 55, 253, 18),
+                    color: AppTheme.primary,
                   ),
                 )
               : !Provider.of<SearchPro>(context).loaded1!
@@ -81,7 +78,7 @@ class _SearchState extends State<Search> {
                       child: Text(
                         "Total Area/Table are empty 😔",
                         style: TextStyle(
-                          color: const Color.fromARGB(255, 55, 253, 18),
+                          color: AppTheme.primary,
                           fontSize: RouteManager.width / 20,
                         ),
                       ),
@@ -104,20 +101,7 @@ class _SearchState extends State<Search> {
                                 ),
                                 builder: (context, child) {
                                   return Theme(
-                                    data: Theme.of(context).copyWith(
-                                      colorScheme: const ColorScheme.light(
-                                        primary: Color.fromARGB(
-                                            255, 55, 253, 18), // <-- SEE HERE
-                                        onPrimary: Colors.white, // <-- SEE HERE
-                                        onSurface: Color.fromARGB(
-                                            255, 0, 94, 255), // <-- SEE HERE
-                                      ),
-                                      textButtonTheme: TextButtonThemeData(
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.red,
-                                        ),
-                                      ),
-                                    ),
+                                    data: AppTheme.pickerTheme(context),
                                     child: child!,
                                   );
                                 },
@@ -134,7 +118,7 @@ class _SearchState extends State<Search> {
                             child: Text(
                               Provider.of<SearchPro>(context).datetext,
                               style: TextStyle(
-                                color: const Color.fromARGB(255, 55, 253, 18),
+                                color: AppTheme.primary,
                                 fontSize: RouteManager.width / 21,
                               ),
                             ),
@@ -148,28 +132,27 @@ class _SearchState extends State<Search> {
                               height: RouteManager.width / 6.5,
                               child: TextField(
                                 controller: cust,
-                                cursorColor:
-                                    const Color.fromARGB(255, 55, 253, 18),
+                                cursorColor: AppTheme.primary,
                                 decoration: InputDecoration(
                                   enabledBorder: const OutlineInputBorder(
                                     borderRadius:
                                         BorderRadius.all(Radius.circular(5.0)),
                                     borderSide: BorderSide(
-                                      color: Color.fromARGB(255, 8, 9, 8),
+                                      color: AppTheme.textPrimary,
                                     ),
                                   ),
                                   focusedBorder: const OutlineInputBorder(
                                     borderRadius:
                                         BorderRadius.all(Radius.circular(5.0)),
                                     borderSide: BorderSide(
-                                      color: Color.fromARGB(255, 55, 253, 18),
+                                      color: AppTheme.primary,
                                     ),
                                   ),
                                   disabledBorder: const OutlineInputBorder(
                                     borderRadius:
                                         BorderRadius.all(Radius.circular(5.0)),
                                     borderSide: BorderSide(
-                                      color: Color.fromARGB(255, 55, 253, 18),
+                                      color: AppTheme.primary,
                                     ),
                                   ),
                                   // border:
@@ -177,15 +160,14 @@ class _SearchState extends State<Search> {
                                   labelStyle: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: RouteManager.width / 23,
-                                    color:
-                                        const Color.fromARGB(255, 55, 253, 18),
+                                    color: AppTheme.primary,
                                   ),
                                   floatingLabelBehavior:
                                       FloatingLabelBehavior.auto,
                                   labelText: "Customer's Name",
                                   hintText: "Enter Name",
                                   hintStyle: TextStyle(
-                                    color: Colors.grey,
+                                    color: AppTheme.textSecondary,
                                     fontWeight: FontWeight.bold,
                                     fontSize: RouteManager.width / 23,
                                   ),
@@ -203,8 +185,7 @@ class _SearchState extends State<Search> {
                                 hint: Text(
                                   "Pick Area",
                                   style: TextStyle(
-                                      color: const Color.fromARGB(
-                                          255, 55, 253, 18),
+                                      color: AppTheme.primary,
                                       fontSize: RouteManager.width / 23,
                                       fontWeight: FontWeight.bold),
                                 ),
@@ -224,8 +205,7 @@ class _SearchState extends State<Search> {
                                             area.areaname,
                                             style: TextStyle(
                                               fontSize: RouteManager.width / 23,
-                                              color: const Color.fromARGB(
-                                                  255, 55, 253, 18),
+                                              color: AppTheme.primary,
                                             ),
                                           ),
                                   );
@@ -244,7 +224,7 @@ class _SearchState extends State<Search> {
                               // DropdownButton<TableObject>(
                               //   hint: Text(
                               //     "Pick Table",
-                              //     style: TextStyle(color: const Color.fromARGB(255, 55, 253, 18), fontSize: RouteManager.width / 23, fontWeight: FontWeight.bold),
+                              //     style: TextStyle(color: AppTheme.primary, fontSize: RouteManager.width / 23, fontWeight: FontWeight.bold),
                               //   ),
                               //   value: Provider.of<SearchPro>(context).selectedtable,
                               //   items: Provider.of<SearchPro>(context).tables.map((TableObject table) {
@@ -256,7 +236,7 @@ class _SearchState extends State<Search> {
                               //               table.tablename,
                               //               style: TextStyle(
                               //                 fontSize: RouteManager.width / 23,
-                              //                 color: const Color.fromARGB(255, 55, 253, 18),
+                              //                 color: AppTheme.primary,
                               //               ),
                               //             ),
                               //     );
@@ -273,8 +253,7 @@ class _SearchState extends State<Search> {
                           ),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  const Color.fromARGB(255, 55, 253, 18),
+                              backgroundColor: AppTheme.primary,
                             ),
                             onPressed: Provider.of<SearchPro>(context).d == null
                                 ? null
@@ -335,7 +314,7 @@ class _SearchState extends State<Search> {
                           Opacity(
                             opacity: 0.5,
                             child: Container(
-                              color: Colors.grey,
+                              color: AppTheme.textSecondary,
                               width: RouteManager.width / 1.2,
                               height: RouteManager.width / 300,
                             ),
@@ -343,15 +322,14 @@ class _SearchState extends State<Search> {
                           SizedBox(height: RouteManager.width / 40),
                           !Provider.of<SearchPro>(context).nothingsearched
                               ? SizedBox(
-                                  // color: Colors.blue,
+                                  // color: AppTheme.secondary,
                                   width: RouteManager.width / 1.02,
                                   height: RouteManager.height / 1.69,
                                   child:
                                       !Provider.of<SearchPro>(context).loaded2
                                           ? const Center(
                                               child: CircularProgressIndicator(
-                                                color: Color.fromARGB(
-                                                    255, 55, 253, 18),
+                                                color: AppTheme.primary,
                                               ),
                                             )
                                           : Provider.of<SearchPro>(context)
@@ -364,9 +342,7 @@ class _SearchState extends State<Search> {
                                                       fontSize:
                                                           RouteManager.width /
                                                               20,
-                                                      color:
-                                                          const Color.fromARGB(
-                                                              255, 55, 253, 18),
+                                                      color: AppTheme.primary,
                                                     ),
                                                   ),
                                                 )
@@ -378,7 +354,7 @@ class _SearchState extends State<Search> {
                                                           .length,
                                                   itemBuilder: (cont, index) {
                                                     return SizedBox(
-                                                      // color: Colors.red,
+                                                      // color: AppTheme.danger,
                                                       // width: 2,
                                                       height:
                                                           RouteManager.height /
@@ -466,7 +442,7 @@ class _SearchState extends State<Search> {
                                                                                   },
                                                                                   child: const Icon(
                                                                                     Icons.close_sharp,
-                                                                                    color: Color.fromARGB(255, 55, 253, 18),
+                                                                                    color: AppTheme.primary,
                                                                                   ),
                                                                                 ),
                                                                                 SizedBox(
@@ -475,7 +451,7 @@ class _SearchState extends State<Search> {
                                                                                 Text(
                                                                                   "Update Booking",
                                                                                   style: TextStyle(
-                                                                                    color: const Color.fromARGB(255, 55, 253, 18),
+                                                                                    color: AppTheme.primary,
                                                                                     fontSize: RouteManager.width / 21,
                                                                                   ),
                                                                                 ),
@@ -497,19 +473,19 @@ class _SearchState extends State<Search> {
                                                                                         enabledBorder: const OutlineInputBorder(
                                                                                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
                                                                                           borderSide: BorderSide(
-                                                                                            color: Color.fromARGB(255, 55, 253, 18),
+                                                                                            color: AppTheme.primary,
                                                                                           ),
                                                                                         ),
                                                                                         focusedBorder: const OutlineInputBorder(
                                                                                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
                                                                                           borderSide: BorderSide(
-                                                                                            color: Color.fromARGB(255, 55, 253, 18),
+                                                                                            color: AppTheme.primary,
                                                                                           ),
                                                                                         ),
                                                                                         disabledBorder: const OutlineInputBorder(
                                                                                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
                                                                                           borderSide: BorderSide(
-                                                                                            color: Color.fromARGB(255, 55, 253, 18),
+                                                                                            color: AppTheme.primary,
                                                                                           ),
                                                                                         ),
                                                                                         fillColor: Colors.white,
@@ -519,7 +495,7 @@ class _SearchState extends State<Search> {
                                                                                         labelStyle: TextStyle(
                                                                                           fontWeight: FontWeight.bold,
                                                                                           fontSize: RouteManager.width / 20,
-                                                                                          color: const Color.fromARGB(255, 55, 253, 18),
+                                                                                          color: AppTheme.primary,
                                                                                         ),
                                                                                         hintText: "Enter Customer's Name",
                                                                                         hintStyle: TextStyle(
@@ -534,19 +510,19 @@ class _SearchState extends State<Search> {
                                                                                         enabledBorder: const OutlineInputBorder(
                                                                                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
                                                                                           borderSide: BorderSide(
-                                                                                            color: Color.fromARGB(255, 55, 253, 18),
+                                                                                            color: AppTheme.primary,
                                                                                           ),
                                                                                         ),
                                                                                         focusedBorder: const OutlineInputBorder(
                                                                                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
                                                                                           borderSide: BorderSide(
-                                                                                            color: Color.fromARGB(255, 55, 253, 18),
+                                                                                            color: AppTheme.primary,
                                                                                           ),
                                                                                         ),
                                                                                         disabledBorder: const OutlineInputBorder(
                                                                                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
                                                                                           borderSide: BorderSide(
-                                                                                            color: Color.fromARGB(255, 55, 253, 18),
+                                                                                            color: AppTheme.primary,
                                                                                           ),
                                                                                         ),
                                                                                         fillColor: Colors.white,
@@ -556,7 +532,7 @@ class _SearchState extends State<Search> {
                                                                                         labelStyle: TextStyle(
                                                                                           fontWeight: FontWeight.bold,
                                                                                           fontSize: RouteManager.width / 20,
-                                                                                          color: const Color.fromARGB(255, 55, 253, 18),
+                                                                                          color: AppTheme.primary,
                                                                                         ),
                                                                                         hintText: "Enter Customer's Phn",
                                                                                         hintStyle: TextStyle(
@@ -572,19 +548,19 @@ class _SearchState extends State<Search> {
                                                                                         enabledBorder: const OutlineInputBorder(
                                                                                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
                                                                                           borderSide: BorderSide(
-                                                                                            color: Color.fromARGB(255, 55, 253, 18),
+                                                                                            color: AppTheme.primary,
                                                                                           ),
                                                                                         ),
                                                                                         focusedBorder: const OutlineInputBorder(
                                                                                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
                                                                                           borderSide: BorderSide(
-                                                                                            color: Color.fromARGB(255, 55, 253, 18),
+                                                                                            color: AppTheme.primary,
                                                                                           ),
                                                                                         ),
                                                                                         disabledBorder: const OutlineInputBorder(
                                                                                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
                                                                                           borderSide: BorderSide(
-                                                                                            color: Color.fromARGB(255, 55, 253, 18),
+                                                                                            color: AppTheme.primary,
                                                                                           ),
                                                                                         ),
                                                                                         fillColor: Colors.white,
@@ -594,7 +570,7 @@ class _SearchState extends State<Search> {
                                                                                         labelStyle: TextStyle(
                                                                                           fontWeight: FontWeight.bold,
                                                                                           fontSize: RouteManager.width / 20,
-                                                                                          color: const Color.fromARGB(255, 55, 253, 18),
+                                                                                          color: AppTheme.primary,
                                                                                         ),
                                                                                         hintText: "Enter Advance",
                                                                                         hintStyle: TextStyle(
@@ -610,19 +586,19 @@ class _SearchState extends State<Search> {
                                                                                         enabledBorder: const OutlineInputBorder(
                                                                                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
                                                                                           borderSide: BorderSide(
-                                                                                            color: Color.fromARGB(255, 55, 253, 18),
+                                                                                            color: AppTheme.primary,
                                                                                           ),
                                                                                         ),
                                                                                         focusedBorder: const OutlineInputBorder(
                                                                                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
                                                                                           borderSide: BorderSide(
-                                                                                            color: Color.fromARGB(255, 55, 253, 18),
+                                                                                            color: AppTheme.primary,
                                                                                           ),
                                                                                         ),
                                                                                         disabledBorder: const OutlineInputBorder(
                                                                                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
                                                                                           borderSide: BorderSide(
-                                                                                            color: Color.fromARGB(255, 55, 253, 18),
+                                                                                            color: AppTheme.primary,
                                                                                           ),
                                                                                         ),
                                                                                         fillColor: Colors.white,
@@ -632,7 +608,7 @@ class _SearchState extends State<Search> {
                                                                                         labelStyle: TextStyle(
                                                                                           fontWeight: FontWeight.bold,
                                                                                           fontSize: RouteManager.width / 20,
-                                                                                          color: const Color.fromARGB(255, 55, 253, 18),
+                                                                                          color: AppTheme.primary,
                                                                                         ),
                                                                                         hintText: "Enter Total Persons",
                                                                                         hintStyle: TextStyle(
@@ -645,7 +621,7 @@ class _SearchState extends State<Search> {
                                                                                       child: Text(
                                                                                         bookedfor == null ? "Booking Date" : "${bookedfor!.year}-${bookedfor!.month}-${bookedfor!.day}",
                                                                                         style: TextStyle(
-                                                                                          color: const Color.fromARGB(255, 55, 253, 18),
+                                                                                          color: AppTheme.primary,
                                                                                           fontSize: RouteManager.width / 21,
                                                                                         ),
                                                                                       ),
@@ -659,18 +635,7 @@ class _SearchState extends State<Search> {
                                                                                           ),
                                                                                           builder: (context, child) {
                                                                                             return Theme(
-                                                                                              data: Theme.of(context).copyWith(
-                                                                                                colorScheme: const ColorScheme.light(
-                                                                                                  primary: Color.fromARGB(255, 55, 253, 18), // <-- SEE HERE
-                                                                                                  onPrimary: Colors.white, // <-- SEE HERE
-                                                                                                  onSurface: Color.fromARGB(255, 0, 94, 255), // <-- SEE HERE
-                                                                                                ),
-                                                                                                textButtonTheme: TextButtonThemeData(
-                                                                                                  style: TextButton.styleFrom(
-                                                                                                    foregroundColor: Colors.red,
-                                                                                                  ),
-                                                                                                ),
-                                                                                              ),
+                                                                                              data: AppTheme.pickerTheme(context),
                                                                                               child: child!,
                                                                                             );
                                                                                           },
@@ -686,7 +651,7 @@ class _SearchState extends State<Search> {
                                                                                     ),
                                                                                     ElevatedButton(
                                                                                       style: ElevatedButton.styleFrom(
-                                                                                        backgroundColor: const Color.fromARGB(255, 55, 253, 18),
+                                                                                        backgroundColor: AppTheme.primary,
                                                                                       ),
                                                                                       child: Text(
                                                                                         "Update",
@@ -797,7 +762,7 @@ class _SearchState extends State<Search> {
                                                                     fontSize:
                                                                         RouteManager.width /
                                                                             24,
-                                                                    // color: const Color.fromARGB(255, 55, 253, 18),
+                                                                    // color: AppTheme.primary,
                                                                   ),
                                                                 ),
                                                               ],
@@ -842,7 +807,7 @@ class _SearchState extends State<Search> {
                                                                     fontSize:
                                                                         RouteManager.width /
                                                                             24,
-                                                                    // color: const Color.fromARGB(255, 55, 253, 18),
+                                                                    // color: AppTheme.primary,
                                                                   ),
                                                                 ),
                                                               ],
@@ -883,7 +848,7 @@ class _SearchState extends State<Search> {
                                                                     fontSize:
                                                                         RouteManager.width /
                                                                             24,
-                                                                    // color: const Color.fromARGB(255, 55, 253, 18),
+                                                                    // color: AppTheme.primary,
                                                                   ),
                                                                 ),
                                                               ],
@@ -924,7 +889,7 @@ class _SearchState extends State<Search> {
                                                                     fontSize:
                                                                         RouteManager.width /
                                                                             24,
-                                                                    // color: const Color.fromARGB(255, 55, 253, 18),
+                                                                    // color: AppTheme.primary,
                                                                   ),
                                                                 ),
                                                                 Container(
@@ -1034,7 +999,7 @@ class _SearchState extends State<Search> {
                                                                     fontSize:
                                                                         RouteManager.width /
                                                                             24,
-                                                                    // color: const Color.fromARGB(255, 55, 253, 18),
+                                                                    // color: AppTheme.primary,
                                                                   ),
                                                                 ),
                                                               ],
@@ -1079,7 +1044,7 @@ class _SearchState extends State<Search> {
                                                                     fontSize:
                                                                         RouteManager.width /
                                                                             24,
-                                                                    // color: const Color.fromARGB(255, 55, 253, 18),
+                                                                    // color: AppTheme.primary,
                                                                   ),
                                                                 ),
                                                               ],
@@ -1125,7 +1090,7 @@ class _SearchState extends State<Search> {
                                                                     fontSize:
                                                                         RouteManager.width /
                                                                             24,
-                                                                    // color: const Color.fromARGB(255, 55, 253, 18),
+                                                                    // color: AppTheme.primary,
                                                                   ),
                                                                 ),
                                                               ],
@@ -1264,7 +1229,7 @@ class _SearchState extends State<Search> {
                                                                         fontSize:
                                                                             RouteManager.width /
                                                                                 24,
-                                                                        // color: const Color.fromARGB(255, 55, 253, 18),
+                                                                        // color: AppTheme.primary,
                                                                       ),
                                                                     );
                                                                   },
@@ -1349,7 +1314,7 @@ class _SearchState extends State<Search> {
                                                                       fontSize:
                                                                           RouteManager.width /
                                                                               24,
-                                                                      // color: const Color.fromARGB(255, 55, 253, 18),
+                                                                      // color: AppTheme.primary,
                                                                     ),
                                                                   );
                                                                 }),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:table_booking/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -26,21 +27,19 @@ class _EditTablesState extends State<EditTables> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 55, 253, 18),
-        title: Row(
-          children: [
-            SizedBox(width: RouteManager.width / 4.5),
-            Text("Report All",
-                style: TextStyle(fontSize: RouteManager.width / 17)),
-          ],
-        ),
+        backgroundColor: AppTheme.primary,
+        centerTitle: true,
+        title: Text("Report All",
+            style: TextStyle(fontSize: RouteManager.width / 17)),
       ),
       body: Column(
         children: [
-          Container(
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
               children: [
                 ElevatedButton.icon(
                   onPressed: () async {
@@ -57,8 +56,9 @@ class _EditTablesState extends State<EditTables> {
                     }
                   },
                   icon: const Icon(Icons.calendar_month),
-                  label: Text(
-                      "From: ${fromDate != null ? DateFormat('dd-MM-yyyy').format(fromDate!) : 'Select Date'}"),
+                  label: Text(fromDate != null
+                      ? "From: ${DateFormat('dd-MM-yyyy').format(fromDate!)}"
+                      : "From Date"),
                 ),
                 ElevatedButton.icon(
                   onPressed: () async {
@@ -75,8 +75,9 @@ class _EditTablesState extends State<EditTables> {
                     }
                   },
                   icon: const Icon(Icons.calendar_month),
-                  label: Text(
-                      "To: ${toDate != null ? DateFormat('dd-MM-yyyy').format(toDate!) : 'Select Date'}"),
+                  label: Text(toDate != null
+                      ? "To: ${DateFormat('dd-MM-yyyy').format(toDate!)}"
+                      : "To Date"),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -91,74 +92,81 @@ class _EditTablesState extends State<EditTables> {
               ],
             ),
           ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SingleChildScrollView(
-              child: DataTable(
-                columnSpacing: 16,
-                headingRowColor:
-                    WidgetStateColor.resolveWith((states) => Colors.blueGrey),
-                dataRowColor:
-                    WidgetStateColor.resolveWith((states) => Colors.white),
-                columns: [
-                  DataColumn(
-                    label: SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.2,
-                      child: const Text("Customer Name"),
-                    ),
-                  ),
-                  DataColumn(
-                    label: SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.15,
-                      child: const Text("Booking Date"),
-                    ),
-                  ),
-                  DataColumn(
-                    label: SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.15,
-                      child: const Text("Area"),
-                    ),
-                  ),
-                  DataColumn(
-                    label: SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.2,
-                      child: const Text("Table"),
-                    ),
-                  ),
-                  DataColumn(
-                    label: SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.15,
-                      child: const Text("Payment"),
-                    ),
-                  ),
-                ],
-                rows: List<DataRow>.generate(
-                  searchProvider.searches.length,
-                  (index) => DataRow(
-                    cells: [
-                      DataCell(SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.2,
-                        child: Text(searchProvider.searches[index].tablename),
-                      )),
-                      DataCell(SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.15,
-                        child: Text(DateFormat('dd-MM-yyyy')
-                            .format(searchProvider.searches[index].bookedon)),
-                      )),
-                      DataCell(SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.15,
-                        child: Text(searchProvider.searches[index].areaname),
-                      )),
-                      DataCell(SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.2,
-                        child: Text(searchProvider.searches[index].tablename),
-                      )),
-                      DataCell(SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.15,
-                        child: Text(
-                            searchProvider.searches[index].advance.toString()),
-                      )),
+          Expanded(
+            child: Scrollbar(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SingleChildScrollView(
+                  child: DataTable(
+                    columnSpacing: RouteManager.width / 28,
+                    headingRowColor: WidgetStateColor.resolveWith(
+                        (states) => AppTheme.primaryDark),
+                    dataRowColor:
+                        WidgetStateColor.resolveWith((states) => Colors.white),
+                    columns: [
+                      DataColumn(
+                        label: SizedBox(
+                          width: RouteManager.width * 0.24,
+                          child: const Text("Customer Name"),
+                        ),
+                      ),
+                      DataColumn(
+                        label: SizedBox(
+                          width: RouteManager.width * 0.18,
+                          child: const Text("Booking Date"),
+                        ),
+                      ),
+                      DataColumn(
+                        label: SizedBox(
+                          width: RouteManager.width * 0.18,
+                          child: const Text("Area"),
+                        ),
+                      ),
+                      DataColumn(
+                        label: SizedBox(
+                          width: RouteManager.width * 0.2,
+                          child: const Text("Table"),
+                        ),
+                      ),
+                      DataColumn(
+                        label: SizedBox(
+                          width: RouteManager.width * 0.16,
+                          child: const Text("Payment"),
+                        ),
+                      ),
                     ],
+                    rows: List<DataRow>.generate(
+                      searchProvider.searches.length,
+                      (index) => DataRow(
+                        cells: [
+                          DataCell(SizedBox(
+                            width: RouteManager.width * 0.24,
+                            child:
+                                Text(searchProvider.searches[index].tablename),
+                          )),
+                          DataCell(SizedBox(
+                            width: RouteManager.width * 0.18,
+                            child: Text(DateFormat('dd-MM-yyyy').format(
+                                searchProvider.searches[index].bookedon)),
+                          )),
+                          DataCell(SizedBox(
+                            width: RouteManager.width * 0.18,
+                            child:
+                                Text(searchProvider.searches[index].areaname),
+                          )),
+                          DataCell(SizedBox(
+                            width: RouteManager.width * 0.2,
+                            child:
+                                Text(searchProvider.searches[index].tablename),
+                          )),
+                          DataCell(SizedBox(
+                            width: RouteManager.width * 0.16,
+                            child: Text(searchProvider.searches[index].advance
+                                .toString()),
+                          )),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
