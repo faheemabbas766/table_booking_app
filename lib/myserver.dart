@@ -35,8 +35,8 @@ class MyServer {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return WillPopScope(
-          onWillPop: () async => false,
+        return PopScope(
+          canPop: false,
           child: Stack(
             children: [
               Opacity(
@@ -87,7 +87,7 @@ class MyServer {
           [null, areaname]);
       return true;
     } catch (e) {
-      print("ROLAAAAAAAAAAAAAAAAAAAAAAAAA" + e.toString());
+      print("ROLAAAAAAAAAAAAAAAAAAAAAAAAA$e");
       return false;
     }
   }
@@ -104,7 +104,7 @@ class MyServer {
           [null, tablename]);
       return true;
     } catch (e) {
-      print("ROLAAAAAAAAAAAAAAAAAAAAAAAAA" + e.toString());
+      print("ROLAAAAAAAAAAAAAAAAAAAAAAAAA$e");
       return false;
     }
   }
@@ -123,8 +123,14 @@ class MyServer {
     return false;
   }
 
-  static Future<bool> addBooking(int areaid, int tableid, DateTime bookdate,
-      String custname, String custphn, int ttlpersons, int ttladvance,
+  static Future<bool> addBooking(
+      int areaid,
+      int tableid,
+      DateTime bookdate,
+      String custname,
+      String custphn,
+      int ttlpersons,
+      int ttladvance,
       BuildContext context) async {
     try {
       DateTime d = DateTime.now();
@@ -134,8 +140,7 @@ class MyServer {
             null,
             areaid,
             tableid,
-            "${bookdate.year}-${bookdate.month}-${bookdate.day} ${bookdate
-                .hour}:${bookdate.minute}:${bookdate.second}",
+            "${bookdate.year}-${bookdate.month}-${bookdate.day} ${bookdate.hour}:${bookdate.minute}:${bookdate.second}",
             custname,
             custphn,
             ttlpersons,
@@ -173,16 +178,16 @@ class MyServer {
       // break;
       //   }
       // }
-      for (int i = 0; i < Provider
-          .of<AllTablesPro>(context, listen: false)
-          .mytables
-          .length; i++) {
-        if (Provider
-            .of<AllTablesPro>(context, listen: false)
-            .mytables[i].tableid == tableid) {
-          Provider
-              .of<AllTablesPro>(context, listen: false)
-              .mytables[i].booking = BookingObject(
+      for (int i = 0;
+          i < Provider.of<AllTablesPro>(context, listen: false).mytables.length;
+          i++) {
+        if (Provider.of<AllTablesPro>(context, listen: false)
+                .mytables[i]
+                .tableid ==
+            tableid) {
+          Provider.of<AllTablesPro>(context, listen: false)
+              .mytables[i]
+              .booking = BookingObject(
             int.parse(
                 bookingresult[bookingresult.length - 1]["bookid"].toString()),
             custname,
@@ -199,7 +204,7 @@ class MyServer {
       }
       return true;
     } catch (e) {
-      print("ROLAAAAAAAAAAAAAAAAAAAAAAAAA" + e.toString());
+      print("ROLAAAAAAAAAAAAAAAAAAAAAAAAA$e");
       return false;
     }
   }
@@ -209,13 +214,11 @@ class MyServer {
       var result = await db!.query("areas");
       List<AreaObject> list = [];
       for (var i in result) {
-        AreaObject ao = AreaObject(
-            int.parse(i["areaid"].toString()), i["name"].toString());
+        AreaObject ao =
+            AreaObject(int.parse(i["areaid"].toString()), i["name"].toString());
         list.add(ao);
       }
-      Provider
-          .of<AllAreasPro>(context, listen: false)
-          .areas = list;
+      Provider.of<AllAreasPro>(context, listen: false).areas = list;
       print(result.toString());
       return true;
     } catch (e) {
@@ -242,20 +245,11 @@ class MyServer {
       var result = await db!.query("areas");
       List<AreaObject> arealist = [];
       for (var i in result) {
-        AreaObject ao = AreaObject(
-            int.parse(i["areaid"].toString()), i["name"].toString());
+        AreaObject ao =
+            AreaObject(int.parse(i["areaid"].toString()), i["name"].toString());
         arealist.add(ao);
       }
-      Provider
-          .of<SearchPro>(context, listen: false)
-          .areas = arealist;
-      result = await db!.query("tables");
-      List<TableObject> tablelist = [];
-      for (var i in result) {
-        // TableObject to = TableObject(int.parse(i["tableid"].toString()), i["name"].toString(), null);
-        // tablelist.add(to);
-      }
-      // Provider.of<SearchPro>(context, listen: false).tables = tablelist;
+      Provider.of<SearchPro>(context, listen: false).areas = arealist;
       return true;
     } catch (e) {
       print("ROLAAAAAAAAAAAAAAAAAAAAAAAAA$e");
@@ -263,8 +257,8 @@ class MyServer {
     }
   }
 
-  static Future<bool> addTablesInArea(int areaid,
-      List<TableObject> tblist) async {
+  static Future<bool> addTablesInArea(
+      int areaid, List<TableObject> tblist) async {
     try {
       if (tblist.isEmpty) {
         await db!.execute(
@@ -273,8 +267,7 @@ class MyServer {
         return true;
       }
       print(
-          "LENGTH OF LIST==================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>${tblist
-              .length}");
+          "LENGTH OF LIST==================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>${tblist.length}");
       var result = await db!.query("tables");
       var finalresult = [];
       for (var i in result) {
@@ -372,8 +365,8 @@ class MyServer {
     }
   }
 
-  static Future<bool> getAllTables(int areaid, DateTime bookdate,
-      BuildContext context) async {
+  static Future<bool> getAllTables(
+      int areaid, DateTime bookdate, BuildContext context) async {
     print("Area Id  : $areaid");
     try {
       var result = await db!.query("tables");
@@ -426,38 +419,38 @@ class MyServer {
               j["checkin"] == null
                   ? null
                   : DateTime(
-                int.parse(
-                  j["checkin"].toString().split("-")[0],
-                ),
-                int.parse(
-                  j["checkin"].toString().split("-")[1],
-                ),
-                int.parse(
-                  j["checkin"].toString().split("-")[2].split(" ")[0],
-                ),
-                int.parse(
-                  j["checkin"].toString().split(" ")[1].split(":")[0],
-                ),
-                int.parse(
-                  j["checkin"].toString().split(" ")[1].split(":")[1],
-                ),
-                int.parse(
-                  j["checkin"].toString().split(" ")[1].split(":")[2],
-                ),
-              ),
+                      int.parse(
+                        j["checkin"].toString().split("-")[0],
+                      ),
+                      int.parse(
+                        j["checkin"].toString().split("-")[1],
+                      ),
+                      int.parse(
+                        j["checkin"].toString().split("-")[2].split(" ")[0],
+                      ),
+                      int.parse(
+                        j["checkin"].toString().split(" ")[1].split(":")[0],
+                      ),
+                      int.parse(
+                        j["checkin"].toString().split(" ")[1].split(":")[1],
+                      ),
+                      int.parse(
+                        j["checkin"].toString().split(" ")[1].split(":")[2],
+                      ),
+                    ),
               j["checkout"] == null
                   ? null
                   : DateTime(
-                int.parse(
-                  j["checkout"].toString().split("-")[0],
-                ),
-                int.parse(
-                  j["checkout"].toString().split("-")[1],
-                ),
-                int.parse(
-                  j["checkout"].toString().split("-")[2],
-                ),
-              ),
+                      int.parse(
+                        j["checkout"].toString().split("-")[0],
+                      ),
+                      int.parse(
+                        j["checkout"].toString().split("-")[1],
+                      ),
+                      int.parse(
+                        j["checkout"].toString().split("-")[2],
+                      ),
+                    ),
               null,
               int.parse(j["totalpersons"].toString()),
               int.parse(j["advance"].toString()),
@@ -476,9 +469,7 @@ class MyServer {
         // list.add(to);
       }
 
-      Provider
-          .of<AllTablesPro>(context, listen: false)
-          .mytables = list;
+      Provider.of<AllTablesPro>(context, listen: false).mytables = list;
       print(result.toString());
       return true;
     } catch (e) {
@@ -502,15 +493,15 @@ class MyServer {
         for (var j in bookingresult) {
           // print("j==========="+j.toString());
           if (j["areaid"] == areaid &&
-              j["tableid"] == i["tableid"] &&
-              // j["bookdate"] == bookdate.year.toString() + "-" + bookdate.month.toString() + "-" + bookdate.day.toString() &&
-              j["deleted"] == null
+                  j["tableid"] == i["tableid"] &&
+                  // j["bookdate"] == bookdate.year.toString() + "-" + bookdate.month.toString() + "-" + bookdate.day.toString() &&
+                  j["deleted"] == null
 
-          //  &&
-          // j["checkin"] == null &&
-          // j["checkout"] == null &&
-          // j["deleted"] == null
-          ) {
+              //  &&
+              // j["checkin"] == null &&
+              // j["checkout"] == null &&
+              // j["deleted"] == null
+              ) {
             // print("AYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
             co = BookingObject(
               int.parse(j["bookid"].toString()),
@@ -547,38 +538,38 @@ class MyServer {
               j["checkin"] == null
                   ? null
                   : DateTime(
-                int.parse(
-                  j["checkin"].toString().split("-")[0],
-                ),
-                int.parse(
-                  j["checkin"].toString().split("-")[1],
-                ),
-                int.parse(
-                  j["checkin"].toString().split("-")[2].split(" ")[0],
-                ),
-                int.parse(
-                  j["checkin"].toString().split(" ")[1].split(":")[0],
-                ),
-                int.parse(
-                  j["checkin"].toString().split(" ")[1].split(":")[1],
-                ),
-                int.parse(
-                  j["checkin"].toString().split(" ")[1].split(":")[2],
-                ),
-              ),
+                      int.parse(
+                        j["checkin"].toString().split("-")[0],
+                      ),
+                      int.parse(
+                        j["checkin"].toString().split("-")[1],
+                      ),
+                      int.parse(
+                        j["checkin"].toString().split("-")[2].split(" ")[0],
+                      ),
+                      int.parse(
+                        j["checkin"].toString().split(" ")[1].split(":")[0],
+                      ),
+                      int.parse(
+                        j["checkin"].toString().split(" ")[1].split(":")[1],
+                      ),
+                      int.parse(
+                        j["checkin"].toString().split(" ")[1].split(":")[2],
+                      ),
+                    ),
               j["checkout"] == null
                   ? null
                   : DateTime(
-                int.parse(
-                  j["checkout"].toString().split("-")[0],
-                ),
-                int.parse(
-                  j["checkout"].toString().split("-")[1],
-                ),
-                int.parse(
-                  j["checkout"].toString().split("-")[2],
-                ),
-              ),
+                      int.parse(
+                        j["checkout"].toString().split("-")[0],
+                      ),
+                      int.parse(
+                        j["checkout"].toString().split("-")[1],
+                      ),
+                      int.parse(
+                        j["checkout"].toString().split("-")[2],
+                      ),
+                    ),
               null,
               int.parse(j["totalpersons"].toString()),
               int.parse(j["advance"].toString()),
@@ -604,9 +595,7 @@ class MyServer {
         list.add(to);
       }
 
-      Provider
-          .of<ManageAreaPro>(context, listen: false)
-          .mytables = list;
+      Provider.of<ManageAreaPro>(context, listen: false).mytables = list;
       print(result.toString());
       return true;
     } catch (e) {
@@ -615,8 +604,8 @@ class MyServer {
     }
   }
 
-  static Future<bool> getWholeAreaForBooking(int areaid, DateTime bookdate,
-      BuildContext context) async {
+  static Future<bool> getWholeAreaForBooking(
+      int areaid, DateTime bookdate, BuildContext context) async {
     // print("Area Id  : " + areaid.toString());
     try {
       var result = await db!.query("tables");
@@ -631,20 +620,17 @@ class MyServer {
         for (var j in bookingresult) {
           print("BOOKDATE IS:::::::::::::::::${j["bookdate"]}");
           if (j["areaid"] == areaid &&
-              j["tableid"] == i["tableid"] &&
-              "${j["bookdate"].toString().split(" ")[0].split(
-                  "-")[0]}-${j["bookdate"].toString().split(" ")[0].split(
-                  "-")[1]}-${j["bookdate"].toString().split(" ")[0].split(
-                  "-")[2]}" ==
-                  "${bookdate.year}-${bookdate.month}-${bookdate.day}" &&
-              j["deleted"] == null &&
-              j["checkout"] == null
+                  j["tableid"] == i["tableid"] &&
+                  "${j["bookdate"].toString().split(" ")[0].split("-")[0]}-${j["bookdate"].toString().split(" ")[0].split("-")[1]}-${j["bookdate"].toString().split(" ")[0].split("-")[2]}" ==
+                      "${bookdate.year}-${bookdate.month}-${bookdate.day}" &&
+                  j["deleted"] == null &&
+                  j["checkout"] == null
 
-          //  &&
-          // j["checkin"] == null &&
-          // j["checkout"] == null &&
-          // j["deleted"] == null
-          ) {
+              //  &&
+              // j["checkin"] == null &&
+              // j["checkout"] == null &&
+              // j["deleted"] == null
+              ) {
             co = BookingObject(
               int.parse(j["bookid"].toString()),
               j["customername"].toString(),
@@ -680,38 +666,38 @@ class MyServer {
               j["checkin"] == null
                   ? null
                   : DateTime(
-                int.parse(
-                  j["checkin"].toString().split("-")[0],
-                ),
-                int.parse(
-                  j["checkin"].toString().split("-")[1],
-                ),
-                int.parse(
-                  j["checkin"].toString().split("-")[2].split(" ")[0],
-                ),
-                int.parse(
-                  j["checkin"].toString().split(" ")[1].split(":")[0],
-                ),
-                int.parse(
-                  j["checkin"].toString().split(" ")[1].split(":")[1],
-                ),
-                int.parse(
-                  j["checkin"].toString().split(" ")[1].split(":")[2],
-                ),
-              ),
+                      int.parse(
+                        j["checkin"].toString().split("-")[0],
+                      ),
+                      int.parse(
+                        j["checkin"].toString().split("-")[1],
+                      ),
+                      int.parse(
+                        j["checkin"].toString().split("-")[2].split(" ")[0],
+                      ),
+                      int.parse(
+                        j["checkin"].toString().split(" ")[1].split(":")[0],
+                      ),
+                      int.parse(
+                        j["checkin"].toString().split(" ")[1].split(":")[1],
+                      ),
+                      int.parse(
+                        j["checkin"].toString().split(" ")[1].split(":")[2],
+                      ),
+                    ),
               j["checkout"] == null
                   ? null
                   : DateTime(
-                int.parse(
-                  j["checkout"].toString().split("-")[0],
-                ),
-                int.parse(
-                  j["checkout"].toString().split("-")[1],
-                ),
-                int.parse(
-                  j["checkout"].toString().split("-")[2],
-                ),
-              ),
+                      int.parse(
+                        j["checkout"].toString().split("-")[0],
+                      ),
+                      int.parse(
+                        j["checkout"].toString().split("-")[1],
+                      ),
+                      int.parse(
+                        j["checkout"].toString().split("-")[2],
+                      ),
+                    ),
               null,
               int.parse(j["totalpersons"].toString()),
               int.parse(j["advance"].toString()),
@@ -720,11 +706,11 @@ class MyServer {
           }
         }
         if (co != null) {
-          print("Name      : " + co.name);
-          print("phn       : " + co.phn);
-          print("booked_on : " + co.booked_on.toString());
-          print("CheckIn   : " + co.check_in.toString());
-          print("DELETED   : " + co.deleted.toString());
+          print("Name      : ${co.name}");
+          print("phn       : ${co.phn}");
+          print("booked_on : ${co.booked_on}");
+          print("CheckIn   : ${co.check_in}");
+          print("DELETED   : ${co.deleted}");
         }
         TableObject to = TableObject(
             int.parse(i["tableid"].toString()),
@@ -737,9 +723,7 @@ class MyServer {
         list.add(to);
       }
 
-      Provider
-          .of<AllTablesPro>(context, listen: false)
-          .mytables = list;
+      Provider.of<AllTablesPro>(context, listen: false).mytables = list;
       print(result.toString());
       return true;
     } catch (e) {
@@ -748,8 +732,13 @@ class MyServer {
     }
   }
 
-  static Future<bool> updateBooking(int bookid, DateTime bookdate,
-      String custname, String custphn, int advance, int persons,
+  static Future<bool> updateBooking(
+      int bookid,
+      DateTime bookdate,
+      String custname,
+      String custphn,
+      int advance,
+      int persons,
       BuildContext context) async {
     String dt = "${bookdate.year}-${bookdate.month}-${bookdate.day}";
     await db!.execute(
@@ -770,8 +759,8 @@ class MyServer {
     return true;
   }
 
-  static Future<bool> searchBooking(String date, String name, AreaObject area,
-      BuildContext context) async {
+  static Future<bool> searchBooking(
+      String date, String name, AreaObject area, BuildContext context) async {
     print("Given Area  ID : ${area.areaid}");
     // print("Given Table ID :" + table.tableid.toString());
     try {
@@ -782,9 +771,7 @@ class MyServer {
         if (i["deleted"] != null) {
           continue;
         }
-        if ("${i["bookdate"].toString().split(" ")[0].split(
-            "-")[0]}-${i["bookdate"].toString().split(" ")[0].split(
-            "-")[1]}-${i["bookdate"].toString().split(" ")[0].split("-")[2]}" !=
+        if ("${i["bookdate"].toString().split(" ")[0].split("-")[0]}-${i["bookdate"].toString().split(" ")[0].split("-")[1]}-${i["bookdate"].toString().split(" ")[0].split("-")[2]}" !=
             date) {
           continue;
         }
@@ -835,7 +822,7 @@ class MyServer {
               int.parse(i["bookdate"].toString().split(' ')[1].split(":")[0]),
               int.parse(i["bookdate"].toString().split(' ')[1].split(":")[1]),
             ),
-            i["customeremail"].toString(),
+            "",
             i["customerphn"].toString(),
             finalareaname,
             finaltablename,
@@ -844,54 +831,52 @@ class MyServer {
             i["checkin"] == null
                 ? null
                 : DateTime(
-              int.parse(
-                i["checkin"].toString().split("-")[0],
-              ),
-              int.parse(
-                i["checkin"].toString().split("-")[1],
-              ),
-              int.parse(
-                i["checkin"].toString().split("-")[2].split(" ")[0],
-              ),
-              int.parse(
-                i["checkin"].toString().split(" ")[1].split(":")[0],
-              ),
-              int.parse(
-                i["checkin"].toString().split(" ")[1].split(":")[1],
-              ),
-              int.parse(
-                i["checkin"].toString().split(" ")[1].split(":")[2],
-              ),
-            ),
+                    int.parse(
+                      i["checkin"].toString().split("-")[0],
+                    ),
+                    int.parse(
+                      i["checkin"].toString().split("-")[1],
+                    ),
+                    int.parse(
+                      i["checkin"].toString().split("-")[2].split(" ")[0],
+                    ),
+                    int.parse(
+                      i["checkin"].toString().split(" ")[1].split(":")[0],
+                    ),
+                    int.parse(
+                      i["checkin"].toString().split(" ")[1].split(":")[1],
+                    ),
+                    int.parse(
+                      i["checkin"].toString().split(" ")[1].split(":")[2],
+                    ),
+                  ),
             i["checkout"] == null
                 ? null
                 : DateTime(
-              int.parse(
-                i["checkout"].toString().split("-")[0],
-              ),
-              int.parse(
-                i["checkout"].toString().split("-")[1],
-              ),
-              int.parse(
-                i["checkout"].toString().split("-")[2].split(" ")[0],
-              ),
-              int.parse(
-                i["checkout"].toString().split(" ")[1].split(":")[0],
-              ),
-              int.parse(
-                i["checkout"].toString().split(" ")[1].split(":")[1],
-              ),
-              int.parse(
-                i["checkout"].toString().split(" ")[1].split(":")[2],
-              ),
-            ),
+                    int.parse(
+                      i["checkout"].toString().split("-")[0],
+                    ),
+                    int.parse(
+                      i["checkout"].toString().split("-")[1],
+                    ),
+                    int.parse(
+                      i["checkout"].toString().split("-")[2].split(" ")[0],
+                    ),
+                    int.parse(
+                      i["checkout"].toString().split(" ")[1].split(":")[0],
+                    ),
+                    int.parse(
+                      i["checkout"].toString().split(" ")[1].split(":")[1],
+                    ),
+                    int.parse(
+                      i["checkout"].toString().split(" ")[1].split(":")[2],
+                    ),
+                  ),
           ),
         );
       }
       print("LENGTH OF LIST : : : : ${list.length}");
-      Provider
-          .of<SearchPro>(context, listen: false)
-          .searches = list;
+      Provider.of<SearchPro>(context, listen: false).searches = list;
       print(result.toString());
       return true;
     } catch (e) {
@@ -903,8 +888,8 @@ class MyServer {
   static Future<bool> checkIn(int bookid, DateTime d) async {
     print("BOOK ID :$bookid");
     print("d :$d");
-    String dt = "${d.year}-${d.month}-${d.day} ${d.hour}:${d.minute}:${d
-        .second}";
+    String dt =
+        "${d.year}-${d.month}-${d.day} ${d.hour}:${d.minute}:${d.second}";
     print("VALUE OF DT ON CHECKIN IS :$dt:");
     await db!.execute(
       "update bookings set checkin='$dt' where bookid=$bookid",
@@ -920,11 +905,10 @@ class MyServer {
   }
 
   static Future<bool> checkOut(int bookid, DateTime d) async {
-    print("BOOK ID :" + bookid.toString());
-    print("d :" + d.toString());
-    String dt = d.year.toString() + "-" + d.month.toString() + "-" +
-        d.day.toString() + " " + d.hour.toString() + ":" + d.minute.toString() +
-        ":" + d.second.toString();
+    print("BOOK ID :$bookid");
+    print("d :$d");
+    String dt =
+        "${d.year}-${d.month}-${d.day} ${d.hour}:${d.minute}:${d.second}";
     await db!.execute(
       "update bookings set checkout='$dt' where bookid=$bookid",
     );
@@ -935,10 +919,9 @@ class MyServer {
   }
 
   static Future<bool> cancel(int bookid) async {
-    print("BOOK ID :" + bookid.toString());
+    print("BOOK ID :$bookid");
     DateTime d = DateTime.now();
-    String dt = d.year.toString() + "-" + d.month.toString() + "-" +
-        d.day.toString();
+    String dt = "${d.year}-${d.month}-${d.day}";
     await db!.execute(
       "update bookings set deleted='$dt' where bookid=$bookid",
     );
@@ -950,24 +933,21 @@ class MyServer {
       var result = await db!.query("areas");
       List<AreaObject> list = [];
       for (var i in result) {
-        AreaObject ao = AreaObject(
-            int.parse(i["areaid"].toString()), i["name"].toString());
+        AreaObject ao =
+            AreaObject(int.parse(i["areaid"].toString()), i["name"].toString());
         list.add(ao);
       }
-      Provider
-          .of<EditAreasPro>(context, listen: false)
-          .areas = list;
+      Provider.of<EditAreasPro>(context, listen: false).areas = list;
       print(result.toString());
       return true;
     } catch (e) {
-      print("ROLAAAAAAAAAAAAAAAAAAAAAAAAA" + e.toString());
+      print("ROLAAAAAAAAAAAAAAAAAAAAAAAAA$e");
       return false;
     }
   }
 
-
-  static Future<bool> searchAllBooking(BuildContext context, DateTime? fromDate,
-      DateTime? toDate) async {
+  static Future<bool> searchAllBooking(
+      BuildContext context, DateTime? fromDate, DateTime? toDate) async {
     try {
       var result = await db!.query("Bookings");
       print("result : : : : : ${result.length}");
@@ -1027,7 +1007,7 @@ class MyServer {
               int.parse(i["sysdate"].toString().split('-')[2]),
             ),
             bookDate,
-            i["customeremail"].toString(),
+            "",
             i["customerphn"].toString(),
             finalareaname,
             finaltablename,
@@ -1036,30 +1016,36 @@ class MyServer {
             i["checkin"] == null
                 ? null
                 : DateTime(
-              int.parse(i["checkin"].toString().split("-")[0]),
-              int.parse(i["checkin"].toString().split("-")[1]),
-              int.parse(i["checkin"].toString().split("-")[2].split(" ")[0]),
-              int.parse(i["checkin"].toString().split(" ")[1].split(":")[0]),
-              int.parse(i["checkin"].toString().split(" ")[1].split(":")[1]),
-              int.parse(i["checkin"].toString().split(" ")[1].split(":")[2]),
-            ),
+                    int.parse(i["checkin"].toString().split("-")[0]),
+                    int.parse(i["checkin"].toString().split("-")[1]),
+                    int.parse(
+                        i["checkin"].toString().split("-")[2].split(" ")[0]),
+                    int.parse(
+                        i["checkin"].toString().split(" ")[1].split(":")[0]),
+                    int.parse(
+                        i["checkin"].toString().split(" ")[1].split(":")[1]),
+                    int.parse(
+                        i["checkin"].toString().split(" ")[1].split(":")[2]),
+                  ),
             i["checkout"] == null
                 ? null
                 : DateTime(
-              int.parse(i["checkout"].toString().split("-")[0]),
-              int.parse(i["checkout"].toString().split("-")[1]),
-              int.parse(i["checkout"].toString().split("-")[2].split(" ")[0]),
-              int.parse(i["checkout"].toString().split(" ")[1].split(":")[0]),
-              int.parse(i["checkout"].toString().split(" ")[1].split(":")[1]),
-              int.parse(i["checkout"].toString().split(" ")[1].split(":")[2]),
-            ),
+                    int.parse(i["checkout"].toString().split("-")[0]),
+                    int.parse(i["checkout"].toString().split("-")[1]),
+                    int.parse(
+                        i["checkout"].toString().split("-")[2].split(" ")[0]),
+                    int.parse(
+                        i["checkout"].toString().split(" ")[1].split(":")[0]),
+                    int.parse(
+                        i["checkout"].toString().split(" ")[1].split(":")[1]),
+                    int.parse(
+                        i["checkout"].toString().split(" ")[1].split(":")[2]),
+                  ),
           ),
         );
       }
       print("LENGTH OF LIST : : : : ${list.length}");
-      Provider
-          .of<SearchPro>(context, listen: false)
-          .searches = list;
+      Provider.of<SearchPro>(context, listen: false).searches = list;
       print(result.toString());
       return true;
     } catch (e) {
@@ -1174,7 +1160,3 @@ class MyServer {
 //     }
 //   }
 // }
-
-
-
-

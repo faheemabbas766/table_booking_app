@@ -1,6 +1,3 @@
-import 'package:table_booking/Entities/areaobject.dart';
-import 'package:table_booking/Entities/tableobject.dart';
-
 class SearchObject {
   late int bookid;
   late String name;

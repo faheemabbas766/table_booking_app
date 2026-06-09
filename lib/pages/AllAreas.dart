@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
-import 'package:fluttertoast/fluttertoast.dart' as ft;
 import 'package:table_booking/Providers/allareaspro.dart';
 import '../Api & Routes/routes.dart';
 // import '../Providers/alltablespro (deleted).dart';
 import '../Providers/alltablespro.dart';
-import '../Providers/homepro.dart';
 import '../myserver.dart';
 
 class AllAreas extends StatefulWidget {
+  const AllAreas({super.key});
+
   @override
   State<AllAreas> createState() => _AllAreasState();
 }
@@ -21,14 +19,15 @@ class _AllAreasState extends State<AllAreas> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    loadAllAreas(this.context);
+    loadAllAreas(context);
   }
 
   void loadAllAreas(BuildContext context) async {
     while (true) {
       var value = await MyServer.getAllAreas(context);
       if (value) {
-        Provider.of<AllAreasPro>(context, listen: false).reload = !Provider.of<AllAreasPro>(context, listen: false).reload;
+        Provider.of<AllAreasPro>(context, listen: false).reload =
+            !Provider.of<AllAreasPro>(context, listen: false).reload;
         Provider.of<AllAreasPro>(context, listen: false).isloaded = true;
         Provider.of<AllAreasPro>(context, listen: false).notifyListenerz();
         break;
@@ -41,18 +40,17 @@ class _AllAreasState extends State<AllAreas> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: const Color.fromARGB(
-              255, 55, 253, 18),
+          backgroundColor: const Color.fromARGB(255, 55, 253, 18),
           title: Row(
             children: [
               SizedBox(
                 width: RouteManager.width / 4,
               ),
-              Text("Areas"),
+              const Text("Areas"),
             ],
           ),
         ),
-        body: Container(
+        body: SizedBox(
           // color: Colors.red,
           width: RouteManager.width,
           height: RouteManager.height / 1.11,
@@ -63,25 +61,36 @@ class _AllAreasState extends State<AllAreas> {
               Selector<AllAreasPro, bool>(
                 selector: (p0, p1) => p1.reload,
                 builder: (context, reload, child1) {
-                  if (!Provider.of<AllAreasPro>(context, listen: false).isloaded) {
-                    return Center(child: CircularProgressIndicator());
+                  if (!Provider.of<AllAreasPro>(context, listen: false)
+                      .isloaded) {
+                    return const Center(child: CircularProgressIndicator());
                   }
-                  print("Length is : " + Provider.of<AllAreasPro>(context, listen: false).areas.length.toString());
-                  if (Provider.of<AllAreasPro>(context, listen: false).areas.isEmpty) {
+                  print(
+                      "Length is : ${Provider.of<AllAreasPro>(context, listen: false).areas.length}");
+                  if (Provider.of<AllAreasPro>(context, listen: false)
+                      .areas
+                      .isEmpty) {
                     return Center(
                       child: Text(
                         "No Areas Added Yet",
-                        style: TextStyle(fontSize: RouteManager.width / 17, color: Colors.blue),
+                        style: TextStyle(
+                            fontSize: RouteManager.width / 17,
+                            color: Colors.blue),
                       ),
                     );
                   }
-                  return Container(
+                  return SizedBox(
                     // color: Colors.blue,
                     width: RouteManager.width,
                     height: RouteManager.height / 1.14,
                     child: ListView.builder(
                         physics: const BouncingScrollPhysics(),
-                        itemCount: (Provider.of<AllAreasPro>(context, listen: false).areas.length / 3).ceil(),
+                        itemCount:
+                            (Provider.of<AllAreasPro>(context, listen: false)
+                                        .areas
+                                        .length /
+                                    3)
+                                .ceil(),
                         itemBuilder: (cont, ind) {
                           ind = ind + ind + ind;
                           return Column(
@@ -93,9 +102,26 @@ class _AllAreasState extends State<AllAreas> {
                                   ),
                                   InkWell(
                                     onTap: () async {
-                                      Provider.of<AllTablesPro>(context, listen: false).areaid = Provider.of<AllAreasPro>(context, listen: false).areas[ind].areaid;
-                                      Provider.of<AllTablesPro>(context, listen: false).areaname = Provider.of<AllAreasPro>(context, listen: false).areas[ind].areaname;
-                                      var value = await MyServer.checkTablesCount(Provider.of<AllAreasPro>(context, listen: false).areas[ind].areaid);
+                                      Provider.of<AllTablesPro>(context,
+                                              listen: false)
+                                          .areaid = Provider.of<AllAreasPro>(
+                                              context,
+                                              listen: false)
+                                          .areas[ind]
+                                          .areaid;
+                                      Provider.of<AllTablesPro>(context,
+                                              listen: false)
+                                          .areaname = Provider.of<AllAreasPro>(
+                                              context,
+                                              listen: false)
+                                          .areas[ind]
+                                          .areaname;
+                                      var value =
+                                          await MyServer.checkTablesCount(
+                                              Provider.of<AllAreasPro>(context,
+                                                      listen: false)
+                                                  .areas[ind]
+                                                  .areaid);
                                       if (value) {
                                         SystemChrome.setPreferredOrientations(
                                           [
@@ -112,18 +138,24 @@ class _AllAreasState extends State<AllAreas> {
                                     child: Container(
                                       width: RouteManager.width / 3.7,
                                       height: RouteManager.width / 3.7,
-                                      decoration: const BoxDecoration(color: Color.fromARGB(
-                                          255, 55, 253, 18), shape: BoxShape.circle),
+                                      decoration: const BoxDecoration(
+                                          color:
+                                              Color.fromARGB(255, 55, 253, 18),
+                                          shape: BoxShape.circle),
                                       child: Stack(
                                         fit: StackFit.expand,
                                         children: [
                                           Center(
                                             child: Text(
-                                              Provider.of<AllAreasPro>(context, listen: false).areas[ind].areaname,
+                                              Provider.of<AllAreasPro>(context,
+                                                      listen: false)
+                                                  .areas[ind]
+                                                  .areaname,
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.bold,
-                                                fontSize: RouteManager.width / 25,
+                                                fontSize:
+                                                    RouteManager.width / 25,
                                               ),
                                             ),
                                           ),
@@ -134,17 +166,44 @@ class _AllAreasState extends State<AllAreas> {
                                   SizedBox(
                                     width: RouteManager.width / 15,
                                   ),
-                                  ind + 1 < Provider.of<AllAreasPro>(context, listen: false).areas.length
+                                  ind + 1 <
+                                          Provider.of<AllAreasPro>(context,
+                                                  listen: false)
+                                              .areas
+                                              .length
                                       ? InkWell(
                                           onTap: () async {
-                                            Provider.of<AllTablesPro>(context, listen: false).areaid = Provider.of<AllAreasPro>(context, listen: false).areas[ind + 1].areaid;
-                                            Provider.of<AllTablesPro>(context, listen: false).areaname = Provider.of<AllAreasPro>(context, listen: false).areas[ind + 1].areaname;
-                                            var value = await MyServer.checkTablesCount(Provider.of<AllAreasPro>(context, listen: false).areas[ind + 1].areaid);
+                                            Provider.of<AllTablesPro>(context,
+                                                        listen: false)
+                                                    .areaid =
+                                                Provider.of<AllAreasPro>(
+                                                        context,
+                                                        listen: false)
+                                                    .areas[ind + 1]
+                                                    .areaid;
+                                            Provider.of<AllTablesPro>(context,
+                                                        listen: false)
+                                                    .areaname =
+                                                Provider.of<AllAreasPro>(
+                                                        context,
+                                                        listen: false)
+                                                    .areas[ind + 1]
+                                                    .areaname;
+                                            var value =
+                                                await MyServer.checkTablesCount(
+                                                    Provider.of<AllAreasPro>(
+                                                            context,
+                                                            listen: false)
+                                                        .areas[ind + 1]
+                                                        .areaid);
                                             if (value) {
-                                              SystemChrome.setPreferredOrientations(
+                                              SystemChrome
+                                                  .setPreferredOrientations(
                                                 [
-                                                  DeviceOrientation.landscapeRight,
-                                                  DeviceOrientation.landscapeLeft,
+                                                  DeviceOrientation
+                                                      .landscapeRight,
+                                                  DeviceOrientation
+                                                      .landscapeLeft,
                                                 ],
                                               ).then((value) async {
                                                 Navigator.of(context).pushNamed(
@@ -168,18 +227,27 @@ class _AllAreasState extends State<AllAreas> {
                                           child: Container(
                                             width: RouteManager.width / 3.7,
                                             height: RouteManager.width / 3.7,
-                                            decoration: const BoxDecoration(color: Color.fromARGB(
-                                                255, 55, 253, 18), shape: BoxShape.circle),
+                                            decoration: const BoxDecoration(
+                                                color: Color.fromARGB(
+                                                    255, 55, 253, 18),
+                                                shape: BoxShape.circle),
                                             child: Stack(
                                               fit: StackFit.expand,
                                               children: [
                                                 Center(
                                                   child: Text(
-                                                    Provider.of<AllAreasPro>(context, listen: false).areas[ind + 1].areaname,
+                                                    Provider.of<AllAreasPro>(
+                                                            context,
+                                                            listen: false)
+                                                        .areas[ind + 1]
+                                                        .areaname,
                                                     style: TextStyle(
                                                       color: Colors.white,
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: RouteManager.width / 25,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize:
+                                                          RouteManager.width /
+                                                              25,
                                                     ),
                                                   ),
                                                 ),
@@ -187,21 +255,48 @@ class _AllAreasState extends State<AllAreas> {
                                             ),
                                           ),
                                         )
-                                      : SizedBox(),
+                                      : const SizedBox(),
                                   SizedBox(
                                     width: RouteManager.width / 15,
                                   ),
-                                  ind + 2 < Provider.of<AllAreasPro>(context, listen: false).areas.length
+                                  ind + 2 <
+                                          Provider.of<AllAreasPro>(context,
+                                                  listen: false)
+                                              .areas
+                                              .length
                                       ? InkWell(
                                           onTap: () async {
-                                            Provider.of<AllTablesPro>(context, listen: false).areaid = Provider.of<AllAreasPro>(context, listen: false).areas[ind + 2].areaid;
-                                            Provider.of<AllTablesPro>(context, listen: false).areaname = Provider.of<AllAreasPro>(context, listen: false).areas[ind + 2].areaname;
-                                            var value = await MyServer.checkTablesCount(Provider.of<AllAreasPro>(context, listen: false).areas[ind + 2].areaid);
+                                            Provider.of<AllTablesPro>(context,
+                                                        listen: false)
+                                                    .areaid =
+                                                Provider.of<AllAreasPro>(
+                                                        context,
+                                                        listen: false)
+                                                    .areas[ind + 2]
+                                                    .areaid;
+                                            Provider.of<AllTablesPro>(context,
+                                                        listen: false)
+                                                    .areaname =
+                                                Provider.of<AllAreasPro>(
+                                                        context,
+                                                        listen: false)
+                                                    .areas[ind + 2]
+                                                    .areaname;
+                                            var value =
+                                                await MyServer.checkTablesCount(
+                                                    Provider.of<AllAreasPro>(
+                                                            context,
+                                                            listen: false)
+                                                        .areas[ind + 2]
+                                                        .areaid);
                                             if (value) {
-                                              SystemChrome.setPreferredOrientations(
+                                              SystemChrome
+                                                  .setPreferredOrientations(
                                                 [
-                                                  DeviceOrientation.landscapeRight,
-                                                  DeviceOrientation.landscapeLeft,
+                                                  DeviceOrientation
+                                                      .landscapeRight,
+                                                  DeviceOrientation
+                                                      .landscapeLeft,
                                                 ],
                                               ).then((value) async {
                                                 Navigator.of(context).pushNamed(
@@ -225,18 +320,27 @@ class _AllAreasState extends State<AllAreas> {
                                           child: Container(
                                             width: RouteManager.width / 3.7,
                                             height: RouteManager.width / 3.7,
-                                            decoration: const BoxDecoration(color: Color.fromARGB(
-                                                255, 55, 253, 18), shape: BoxShape.circle),
+                                            decoration: const BoxDecoration(
+                                                color: Color.fromARGB(
+                                                    255, 55, 253, 18),
+                                                shape: BoxShape.circle),
                                             child: Stack(
                                               fit: StackFit.expand,
                                               children: [
                                                 Center(
                                                   child: Text(
-                                                    Provider.of<AllAreasPro>(context, listen: false).areas[ind + 2].areaname,
+                                                    Provider.of<AllAreasPro>(
+                                                            context,
+                                                            listen: false)
+                                                        .areas[ind + 2]
+                                                        .areaname,
                                                     style: TextStyle(
                                                       color: Colors.white,
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: RouteManager.width / 25,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize:
+                                                          RouteManager.width /
+                                                              25,
                                                     ),
                                                   ),
                                                 ),
@@ -244,7 +348,7 @@ class _AllAreasState extends State<AllAreas> {
                                             ),
                                           ),
                                         )
-                                      : SizedBox(),
+                                      : const SizedBox(),
                                 ],
                               ),
                               Container(

@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -7,9 +6,10 @@ import 'package:path/path.dart';
 import '../Api & Routes/routes.dart';
 import '../Providers/homepro.dart';
 import '../myserver.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
@@ -21,18 +21,13 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     RouteManager.width = MediaQuery.of(context).size.width;
     RouteManager.height = MediaQuery.of(context).size.height;
-    print("Width : " + RouteManager.width.toString());
-    print("Height: " + RouteManager.height.toString());
+    print("Width : ${RouteManager.width}");
+    print("Height: ${RouteManager.height}");
     // CheckPreferences();
     return AnimatedSplashScreen.withScreenRouteFunction(
       screenRouteFunction: () async {
         await checkDb(context);
-        var val = await checkVerification(context);
-        if (val) {
-          return Future.value("/home");
-        } else {
-          return Future.value("/authenticationpage");
-        }
+        return Future.value(RouteManager.homepage);
       },
       disableNavigation: navvalue,
       splashTransition: SplashTransition.rotationTransition,
@@ -50,25 +45,6 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
-  Future<bool> checkVerification(BuildContext context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (prefs.getString('verified') == null || prefs.getString('expiredate') == null) {
-      return false;
-    }
-    Provider.of<HomePro>(context, listen: false).expiredate = DateTime(
-      int.parse(
-        prefs.getString('expiredate').toString().split('-')[0],
-      ),
-      int.parse(
-        prefs.getString('expiredate').toString().split('-')[1],
-      ),
-      int.parse(
-        prefs.getString('expiredate').toString().split('-')[2],
-      ),
-    );
-    return true;
-  }
-
   checkDb(BuildContext context) async {
     var databasesPath = await getDatabasesPath();
     String path = join(databasesPath, 'Table_Booking');
@@ -78,13 +54,17 @@ class _SplashScreenState extends State<SplashScreen> {
 
       Provider.of<HomePro>(context, listen: false).totalareas = result.length;
 
-      print("Areas : : : : : : : : : : : : : : : : : : : : : : : : :  : : " + result.toString());
+      print(
+          "Areas : : : : : : : : : : : : : : : : : : : : : : : : :  : : $result");
       result = await db.query("Tables");
-      print("Tables : : : : : : : : : : : : : : : : : : : : : : : : :  : : " + result.toString());
+      print(
+          "Tables : : : : : : : : : : : : : : : : : : : : : : : : :  : : $result");
       result = await db.query("Bookings");
-      print("Bookings : : : : : : : : : : : : : : : : : : : : : : : : :  : : " + result.toString());
+      print(
+          "Bookings : : : : : : : : : : : : : : : : : : : : : : : : :  : : $result");
       MyServer.db = db;
-      print("------------------------------------------------------------------ >> DB is Opened :" + db.path);
+      print(
+          "------------------------------------------------------------------ >> DB is Opened :${db.path}");
       // print("------------------------------------------------------------------ >> DB VERSION   :" + version.toString());
     }, onCreate: (db, version) async {
       await db.execute("CREATE TABLE Areas ("
@@ -117,9 +97,10 @@ class _SplashScreenState extends State<SplashScreen> {
       // for (int i = 1; i <= 10; i++) {
       //   await db.execute("INSERT INTO Areas ('areaid', 'name') values (?, ?)", [null, "This is Area $i"]);
       // }
-      print("------------------------------------------------------------------ > DB is CREATED :" + db.path);
+      print(
+          "------------------------------------------------------------------ > DB is CREATED :${db.path}");
       // print("------------------------------------------------------------------ > DB VERSION   :" + version.toString());
     });
-    print("Database Path is :" + path + ":");
+    print("Database Path is :$path:");
   }
 }

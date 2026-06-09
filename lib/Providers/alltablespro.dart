@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
 
-import '../Entities/areaobject.dart';
 import '../Entities/tableobject.dart';
 
 class AllTablesPro with ChangeNotifier {
@@ -11,7 +9,7 @@ class AllTablesPro with ChangeNotifier {
   Stack tables = const Stack(
     children: [],
   );
-  bool isloaded=false;
+  bool isloaded = false;
   // bool isdonable = false;
 
   clearAll() {

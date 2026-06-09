@@ -10,8 +10,10 @@ import '../myserver.dart';
 // Import the necessary classes and models (e.g., SearchPro, SearchObject, RouteManager, MyServer)
 
 class EditTables extends StatefulWidget {
+  const EditTables({super.key});
+
   @override
-  _EditTablesState createState() => _EditTablesState();
+  State<EditTables> createState() => _EditTablesState();
 }
 
 class _EditTablesState extends State<EditTables> {
@@ -20,7 +22,7 @@ class _EditTablesState extends State<EditTables> {
 
   @override
   Widget build(BuildContext context) {
-    final searchProvider = Provider.of<SearchPro>(context, listen: false) ?? SearchPro();
+    final searchProvider = Provider.of<SearchPro>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
@@ -28,7 +30,8 @@ class _EditTablesState extends State<EditTables> {
         title: Row(
           children: [
             SizedBox(width: RouteManager.width / 4.5),
-            Text("Report All", style: TextStyle(fontSize: RouteManager.width / 17)),
+            Text("Report All",
+                style: TextStyle(fontSize: RouteManager.width / 17)),
           ],
         ),
       ),
@@ -54,7 +57,8 @@ class _EditTablesState extends State<EditTables> {
                     }
                   },
                   icon: const Icon(Icons.calendar_month),
-                  label: Text("From: ${fromDate != null ? DateFormat('dd-MM-yyyy').format(fromDate!) : 'Select Date'}"),
+                  label: Text(
+                      "From: ${fromDate != null ? DateFormat('dd-MM-yyyy').format(fromDate!) : 'Select Date'}"),
                 ),
                 ElevatedButton.icon(
                   onPressed: () async {
@@ -71,24 +75,15 @@ class _EditTablesState extends State<EditTables> {
                     }
                   },
                   icon: const Icon(Icons.calendar_month),
-                  label: Text("To: ${toDate != null ? DateFormat('dd-MM-yyyy').format(toDate!) : 'Select Date'}"),
+                  label: Text(
+                      "To: ${toDate != null ? DateFormat('dd-MM-yyyy').format(toDate!) : 'Select Date'}"),
                 ),
                 ElevatedButton(
                   onPressed: () async {
                     await MyServer.searchAllBooking(context, fromDate, toDate);
-                    print('Search button pressed');
-                    List<SearchObject> filteredData = searchProvider.searches.where((data) {
-                      if (fromDate == null || toDate == null) {
-                        return true; // If either of the dates is not selected, show all data
-                      }
-                      return data.bookedon.isAfter(fromDate!) && data.bookedon.isBefore(toDate!.add(const Duration(days: 1)));
-                    }).toList();
-
-                    // TODO: Update the dataRows variable with the filteredData list.
-                    // For example, you can create a new List<DataRow> variable called 'dataRows' and use 'filteredData' to populate it.
-
                     setState(() {
-                      // Perform any additional updates or changes to the UI here if needed.
+                      searchProvider.searches =
+                          List<SearchObject>.of(searchProvider.searches);
                     });
                   },
                   child: const Icon(Icons.search),
@@ -101,8 +96,10 @@ class _EditTablesState extends State<EditTables> {
             child: SingleChildScrollView(
               child: DataTable(
                 columnSpacing: 16,
-                headingRowColor: MaterialStateColor.resolveWith((states) => Colors.blueGrey),
-                dataRowColor: MaterialStateColor.resolveWith((states) => Colors.white),
+                headingRowColor:
+                    WidgetStateColor.resolveWith((states) => Colors.blueGrey),
+                dataRowColor:
+                    WidgetStateColor.resolveWith((states) => Colors.white),
                 columns: [
                   DataColumn(
                     label: SizedBox(
@@ -131,13 +128,13 @@ class _EditTablesState extends State<EditTables> {
                   DataColumn(
                     label: SizedBox(
                       width: MediaQuery.of(context).size.width * 0.15,
-                      child: Text("Payment"),
+                      child: const Text("Payment"),
                     ),
                   ),
                 ],
                 rows: List<DataRow>.generate(
                   searchProvider.searches.length,
-                      (index) => DataRow(
+                  (index) => DataRow(
                     cells: [
                       DataCell(SizedBox(
                         width: MediaQuery.of(context).size.width * 0.2,
@@ -145,7 +142,8 @@ class _EditTablesState extends State<EditTables> {
                       )),
                       DataCell(SizedBox(
                         width: MediaQuery.of(context).size.width * 0.15,
-                        child: Text(DateFormat('dd-MM-yyyy').format(searchProvider.searches[index].bookedon)),
+                        child: Text(DateFormat('dd-MM-yyyy')
+                            .format(searchProvider.searches[index].bookedon)),
                       )),
                       DataCell(SizedBox(
                         width: MediaQuery.of(context).size.width * 0.15,
@@ -157,7 +155,8 @@ class _EditTablesState extends State<EditTables> {
                       )),
                       DataCell(SizedBox(
                         width: MediaQuery.of(context).size.width * 0.15,
-                        child: Text(searchProvider.searches[index].advance.toString()),
+                        child: Text(
+                            searchProvider.searches[index].advance.toString()),
                       )),
                     ],
                   ),

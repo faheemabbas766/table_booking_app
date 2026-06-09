@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:table_booking/pages/privacypolicy.dart';
 import '../Pages/splashscreen.dart';
 import '../pages/AllAreas.dart';
 import '../pages/AllTables.dart';
-import '../pages/authentication.dart';
 import '../pages/managearea.dart';
 import '../pages/editareas.dart';
 import '../pages/edittables.dart';
@@ -23,7 +21,6 @@ class RouteManager {
   static const String editareaspage = "/editareaspage";
   static const String edittablespage = "/edittablespage";
   static const String manageareapage = "/manageareapage";
-  static const String authenticationpage= "/authenticationpage";
   // static const String privacypolicy = "/privacypolicy";
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -31,21 +28,19 @@ class RouteManager {
       case splashscreen:
         return MaterialPageRoute(builder: (context) => SplashScreen());
       case homepage:
-        return MaterialPageRoute(builder: (context) => Home());
+        return MaterialPageRoute(builder: (context) => const Home());
       case allareaspage:
-        return MaterialPageRoute(builder: (context) => AllAreas());
+        return MaterialPageRoute(builder: (context) => const AllAreas());
       case alltablespage:
-        return MaterialPageRoute(builder: (context) => AllTables());
+        return MaterialPageRoute(builder: (context) => const AllTables());
       case searchpage:
-        return MaterialPageRoute(builder: (context) => Search());
+        return MaterialPageRoute(builder: (context) => const Search());
       case editareaspage:
-        return MaterialPageRoute(builder: (context) => EditAreas());
+        return MaterialPageRoute(builder: (context) => const EditAreas());
       case edittablespage:
-         return MaterialPageRoute(builder: (context) => EditTables());
+        return MaterialPageRoute(builder: (context) => const EditTables());
       case manageareapage:
-        return MaterialPageRoute(builder: (context) => ManageArea());
-      case authenticationpage:
-        return MaterialPageRoute(builder: (context) => Authentication());
+        return MaterialPageRoute(builder: (context) => const ManageArea());
       // case privacypolicy:
       //   return MaterialPageRoute(builder: (context) => PrivacyPolicy());
       default:

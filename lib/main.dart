@@ -17,12 +17,18 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider<HomePro>(create: (BuildContext context) => HomePro()),
-        ChangeNotifierProvider<AllAreasPro>(create: (BuildContext context) => AllAreasPro()),
-        ChangeNotifierProvider<AllTablesPro>(create: (BuildContext context) => AllTablesPro()),
-        ChangeNotifierProvider<SearchPro>(create: (BuildContext context) => SearchPro()),
-        ChangeNotifierProvider<EditAreasPro>(create: (BuildContext context) => EditAreasPro()),
-        ChangeNotifierProvider<ManageAreaPro>(create: (BuildContext context) => ManageAreaPro()),
+        ChangeNotifierProvider<HomePro>(
+            create: (BuildContext context) => HomePro()),
+        ChangeNotifierProvider<AllAreasPro>(
+            create: (BuildContext context) => AllAreasPro()),
+        ChangeNotifierProvider<AllTablesPro>(
+            create: (BuildContext context) => AllTablesPro()),
+        ChangeNotifierProvider<SearchPro>(
+            create: (BuildContext context) => SearchPro()),
+        ChangeNotifierProvider<EditAreasPro>(
+            create: (BuildContext context) => EditAreasPro()),
+        ChangeNotifierProvider<ManageAreaPro>(
+            create: (BuildContext context) => ManageAreaPro()),
       ],
       child: const MyApp(),
     ),

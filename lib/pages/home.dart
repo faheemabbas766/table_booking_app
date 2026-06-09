@@ -1,22 +1,14 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
 import 'package:fluttertoast/fluttertoast.dart' as ft;
 import '../Api & Routes/routes.dart';
 // import '../Providers/alltablespro (deleted).dart';
-import '../Providers/allareaspro.dart';
-import '../Providers/alltablespro.dart';
-import '../Providers/editareaspro.dart';
 import '../Providers/homepro.dart';
-import '../Providers/manageareapro.dart';
-import '../Providers/searchpro.dart';
 import '../myserver.dart';
 
 class Home extends StatefulWidget {
+  const Home({super.key});
+
   @override
   State<Home> createState() => _HomeState();
 }
@@ -27,96 +19,7 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    Provider.of<HomePro>(this.context, listen: false).timer = Timer.periodic(
-      Duration(seconds: 3),
-      (Timer t) async {
-        DateTime currentdate = DateTime.now();
-        print("CURRENT DATE IS :::::::::::::::::::::::::::::::::::::::::::$currentdate");
-        print("EXPIRE  DATE IS :::::::::::::::::::::::::::::::::::::::::::${Provider.of<HomePro>(this.context, listen: false).expiredate!}");
-        if (currentdate.isAfter(Provider.of<HomePro>(this.context, listen: false).expiredate!) || currentdate == Provider.of<HomePro>(this.context, listen: false).expiredate!) {
-          showDialog(
-              barrierDismissible: false,
-              context: this.context,
-              builder: (cont) {
-                return Dialog(
-                  // shadowColor: Colors.red,
-                  elevation: RouteManager.width,
-                  backgroundColor: Color.fromRGBO(35, 36, 37, 1),
-                  child: Container(
-                      decoration: const BoxDecoration(
-                        color: Color.fromRGBO(35, 36, 37, 1),
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(20),
-                        ),
-                      ),
-                      height: RouteManager.width / 2.5,
-                      padding: EdgeInsets.all(10),
-                      child: Column(
-                        children: [
-                          Center(
-                            child: Column(
-                              children: [
-                                Text(
-                                  "Your Key has Expired ",
-                                  style: TextStyle(
-                                    color: Colors.red,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: RouteManager.width / 17,
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.warning,
-                                  color: Colors.yellow,
-                                  size: RouteManager.width / 12,
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: RouteManager.width / 30),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(
-                                  255, 55, 253, 18),
-                            ),
-                            onPressed: () {
-                              Navigator.of(cont, rootNavigator: true).pop();
-                            },
-                            child: Container(
-                              width: RouteManager.width / 5,
-                              height: RouteManager.width / 8,
-                              child: Center(
-                                child: Text(
-                                  "OK",
-                                  style: TextStyle(
-                                    fontSize: RouteManager.width / 23,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )),
-                );
-              }).then((value) {
-            SharedPreferences.getInstance().then((prefs) async {
-              prefs.clear();
-              Navigator.of(this.context).pushNamedAndRemoveUntil(
-                RouteManager.authenticationpage,
-                (route) => false,
-              );
-              Provider.of<HomePro>(this.context, listen: false).clearAll();
-              Provider.of<AllAreasPro>(this.context, listen: false).clearAll();
-              Provider.of<AllTablesPro>(this.context, listen: false).clearAll();
-              Provider.of<EditAreasPro>(this.context, listen: false).clearAll();
-              Provider.of<ManageAreaPro>(this.context, listen: false).clearAll();
-              Provider.of<SearchPro>(this.context, listen: false).clearAll();
-            });
-          });
-        }
-      },
-    );
   }
 
   @override
@@ -141,7 +44,7 @@ class _HomeState extends State<Home> {
                 SizedBox(
                   height: RouteManager.width / 13,
                 ),
-                Container(
+                SizedBox(
                   width: RouteManager.width / 3.4,
                   height: RouteManager.width / 3.4,
                   child: Image.asset("images/logo.png"),
@@ -163,7 +66,8 @@ class _HomeState extends State<Home> {
                               children: [
                                 InkWell(
                                   onTap: () {
-                                    Navigator.of(context, rootNavigator: true).pop();
+                                    Navigator.of(context, rootNavigator: true)
+                                        .pop();
                                   },
                                   child: Icon(
                                     Icons.close,
@@ -192,7 +96,8 @@ class _HomeState extends State<Home> {
                                   decoration: InputDecoration(
                                     fillColor: Colors.white,
                                     filled: true,
-                                    floatingLabelBehavior: FloatingLabelBehavior.auto,
+                                    floatingLabelBehavior:
+                                        FloatingLabelBehavior.auto,
                                     hintText: "Enter Area Name",
                                     hintStyle: TextStyle(
                                       fontSize: RouteManager.width / 24,
@@ -209,15 +114,27 @@ class _HomeState extends State<Home> {
                                         );
                                         return;
                                       }
-                                      MyServer.addArea(areaname.text).then((value) {
+                                      MyServer.addArea(areaname.text)
+                                          .then((value) {
                                         if (value) {
-                                          Provider.of<HomePro>(context, listen: false).totalareas = Provider.of<HomePro>(context, listen: false).totalareas! + 1;
-                                          Provider.of<HomePro>(context, listen: false).notifyListenerz();
+                                          Provider.of<HomePro>(context,
+                                                      listen: false)
+                                                  .totalareas =
+                                              Provider.of<HomePro>(context,
+                                                          listen: false)
+                                                      .totalareas! +
+                                                  1;
+                                          Provider.of<HomePro>(context,
+                                                  listen: false)
+                                              .notifyListenerz();
                                           ft.Fluttertoast.showToast(
-                                            msg: "Area '" + areaname.text + "' Added",
+                                            msg:
+                                                "Area '${areaname.text}' Added",
                                             toastLength: ft.Toast.LENGTH_SHORT,
                                           );
-                                          Navigator.of(context, rootNavigator: true).pop();
+                                          Navigator.of(context,
+                                                  rootNavigator: true)
+                                              .pop();
                                           areaname.text = "";
                                         } else {
                                           ft.Fluttertoast.showToast(
@@ -229,7 +146,8 @@ class _HomeState extends State<Home> {
                                     },
                                     child: Text(
                                       "Confirm",
-                                      style: TextStyle(fontSize: RouteManager.width / 20),
+                                      style: TextStyle(
+                                          fontSize: RouteManager.width / 20),
                                     ))
                               ]),
                             ),
@@ -249,10 +167,13 @@ class _HomeState extends State<Home> {
                     ),
                     child: Stack(
                       children: [
-                        Icon(Icons.add_circle, color: Colors.white, size: RouteManager.width / 16),
+                        Icon(Icons.add_circle,
+                            color: Colors.white, size: RouteManager.width / 16),
                         Text(
                           "      Area",
-                          style: TextStyle(fontSize: RouteManager.width / 20, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: RouteManager.width / 20,
+                              color: Colors.white),
                         ),
                       ],
                     ),
@@ -356,7 +277,7 @@ class _HomeState extends State<Home> {
                   },
                   child: Container(
                     padding: EdgeInsets.all(RouteManager.width / 23),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.blue,
                       borderRadius: BorderRadius.all(Radius.circular(50)),
                     ),
@@ -364,7 +285,9 @@ class _HomeState extends State<Home> {
                       children: [
                         Text(
                           " All Areas",
-                          style: TextStyle(fontSize: RouteManager.width / 20, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: RouteManager.width / 20,
+                              color: Colors.white),
                         ),
                         // Icon(Icons.arrow)
                       ],
@@ -404,7 +327,7 @@ class _HomeState extends State<Home> {
                   child: Container(
                     padding: EdgeInsets.all(RouteManager.width / 23),
                     decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 243, 75, 33),
+                      color: const Color.fromARGB(255, 243, 75, 33),
                       borderRadius: BorderRadius.only(
                         topRight: Radius.circular(RouteManager.width / 23),
                         bottomRight: Radius.circular(RouteManager.width / 23),
@@ -412,10 +335,13 @@ class _HomeState extends State<Home> {
                     ),
                     child: Stack(
                       children: [
-                        Icon(Icons.search, color: Colors.white, size: RouteManager.width / 14),
+                        Icon(Icons.search,
+                            color: Colors.white, size: RouteManager.width / 14),
                         Text(
                           "      Search",
-                          style: TextStyle(fontSize: RouteManager.width / 20, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: RouteManager.width / 20,
+                              color: Colors.white),
                         ),
                       ],
                     ),
@@ -439,10 +365,13 @@ class _HomeState extends State<Home> {
                     ),
                     child: Stack(
                       children: [
-                        Icon(Icons.report_rounded, color: Colors.white, size: RouteManager.width / 14),
+                        Icon(Icons.report_rounded,
+                            color: Colors.white, size: RouteManager.width / 14),
                         Text(
                           "      Report",
-                          style: TextStyle(fontSize: RouteManager.width / 20, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: RouteManager.width / 20,
+                              color: Colors.white),
                         ),
                       ],
                     ),
@@ -453,12 +382,12 @@ class _HomeState extends State<Home> {
           ),
         ),
         appBar: AppBar(
-          backgroundColor: const Color.fromARGB(
-              255, 55, 253, 18),
+          backgroundColor: const Color.fromARGB(255, 55, 253, 18),
           title: Row(
             children: [
               SizedBox(width: RouteManager.width / 6),
-              Text("Book a Table", style: TextStyle(fontSize: RouteManager.width / 17)),
+              Text("Book a Table",
+                  style: TextStyle(fontSize: RouteManager.width / 17)),
             ],
           ),
         ),
@@ -475,12 +404,13 @@ class _HomeState extends State<Home> {
                 SizedBox(height: RouteManager.width / 10),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(
-                        255, 55, 253, 18),
+                    backgroundColor: const Color.fromARGB(255, 55, 253, 18),
                     padding: EdgeInsets.all(RouteManager.width / 20),
                   ),
                   onPressed: () async {
-                    if (Provider.of<HomePro>(context, listen: false).totalareas == 0) {
+                    if (Provider.of<HomePro>(context, listen: false)
+                            .totalareas ==
+                        0) {
                       ft.Fluttertoast.showToast(
                         msg: "No Area Added Yet",
                         toastLength: ft.Toast.LENGTH_SHORT,
@@ -502,7 +432,8 @@ class _HomeState extends State<Home> {
                               primary: Color.fromARGB(
                                   255, 55, 253, 18), // <-- SEE HERE
                               onPrimary: Colors.white, // <-- SEE HERE
-                              onSurface: Color.fromARGB(255, 0, 94, 255), // <-- SEE HERE
+                              onSurface: Color.fromARGB(
+                                  255, 0, 94, 255), // <-- SEE HERE
                             ),
                             textButtonTheme: TextButtonThemeData(
                               style: TextButton.styleFrom(
@@ -517,7 +448,8 @@ class _HomeState extends State<Home> {
                     if (d != null) {
                       Provider.of<HomePro>(context, listen: false).d = d;
                       // Provider.of<AllTablesPro>(context, listen: false).isbooking = true;
-                      print("Value of d: ${Provider.of<HomePro>(context, listen: false).d}");
+                      print(
+                          "Value of d: ${Provider.of<HomePro>(context, listen: false).d}");
                       TimeOfDay? pickedTime = await showTimePicker(
                         initialTime: TimeOfDay.now(),
                         context: context, //context of current state
@@ -528,11 +460,11 @@ class _HomeState extends State<Home> {
                                 primary: Color.fromARGB(
                                     255, 55, 253, 18), // <-- SEE HERE
                                 onPrimary: Colors.white, // <-- SEE HERE
-                                onSurface: Color.fromARGB(255, 0, 94, 255), // <-- SEE HERE
+                                onSurface: Color.fromARGB(
+                                    255, 0, 94, 255), // <-- SEE HERE
                                 // onBackground: Color.fromARGB(
                                 //                                 255, 55, 253, 18),
-                                background: Color.fromARGB(
-                                    255, 55, 253, 18),
+                                surface: Color.fromARGB(255, 55, 253, 18),
                               ),
                               textButtonTheme: TextButtonThemeData(
                                 style: TextButton.styleFrom(
@@ -545,14 +477,16 @@ class _HomeState extends State<Home> {
                         },
                       );
                       if (pickedTime != null) {
-                        Provider.of<HomePro>(context, listen: false).d = DateTime(
+                        Provider.of<HomePro>(context, listen: false).d =
+                            DateTime(
                           Provider.of<HomePro>(context, listen: false).d!.year,
                           Provider.of<HomePro>(context, listen: false).d!.month,
                           Provider.of<HomePro>(context, listen: false).d!.day,
                           pickedTime.hour,
                           pickedTime.minute,
                         );
-                        print("VALUE OF D : " + Provider.of<HomePro>(context, listen: false).d!.toString());
+                        print(
+                            "VALUE OF D : ${Provider.of<HomePro>(context, listen: false).d!}");
                         Navigator.of(context).pushNamed(
                           RouteManager.allareaspage,
                         );
